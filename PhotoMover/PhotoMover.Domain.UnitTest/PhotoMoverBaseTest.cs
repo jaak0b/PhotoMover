@@ -18,7 +18,7 @@ public abstract class PhotoMoverBaseTest
         CreateOrClearFolder(Domain.SourceFolder);
         CreateOrClearFolder(Domain.TargetFolder);
 
-        ServiceProvider = PhotoMoverServiceProvider.CreateServiceProvider();
+        ServiceProvider = PhotoMoverServiceProvider.CreateServiceProvider<PhotoMoverServiceProvider>();
         Database = ServiceProvider.GetRequiredService<Database>();
         Database.Database.EnsureCreated();
     }

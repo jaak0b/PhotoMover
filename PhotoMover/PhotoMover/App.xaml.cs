@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using Autofac.Extensions.DependencyInjection;
+using CommonServiceLocator;
 using Domain;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -16,14 +17,19 @@ public partial class App : Application
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
     }
 
+    private AutofacServiceProvider? ServiceProvider { get; set; }
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        AutofacServiceProvider serviceProvider = PhotoMoverServiceProvider.CreateServiceProvider();
-        MainWindow mainWindow = serviceProvider.GetRequiredService<MainWindow>();
-        mainWindow.Show();
-
+        ServiceProvider = PhotoMoverServiceProvider.CreateServiceProvider();
+        ServiceProvider.GetRequiredService<MainWindow>().Show();
         base.OnStartup(e);
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        ServiceProvider?.Dispose();
+        base.OnExit(e);
     }
 
     private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
