@@ -1,24 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0-windows</TargetFramework>
-        <Nullable>enable</Nullable>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <UseWPF>true</UseWPF>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Domain</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Autofac" Version="8.2.0" />
       <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+      <PackageReference Include="MetadataExtractor" Version="2.8.1" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.2" />
       <PackageReference Include="Serilog" Version="4.2.0" />
       <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\PhotoMover.Domain\PhotoMover.Domain.csproj" />
     </ItemGroup>
 
 </Project>

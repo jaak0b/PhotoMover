@@ -1,6 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoMover", "PhotoMover\PhotoMover.csproj", "{346855B3-602F-4B4E-B7BA-2BC704D3B19A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoMover.Domain", "PhotoMover.Domain\PhotoMover.Domain.csproj", "{49061414-0BF0-473A-9184-B50E42CC9969}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoMover.Domain.UnitTest", "PhotoMover.Domain.UnitTest\PhotoMover.Domain.UnitTest.csproj", "{27B295AE-D547-436E-B31D-F9621594BD33}"
+	ProjectSection(ProjectDependencies) = postProject
+		{49061414-0BF0-473A-9184-B50E42CC9969} = {49061414-0BF0-473A-9184-B50E42CC9969}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoMover", "PhotoMover\PhotoMover.csproj", "{B4D30729-3A2F-4F92-BFD6-18216D970010}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +15,17 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{346855B3-602F-4B4E-B7BA-2BC704D3B19A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{346855B3-602F-4B4E-B7BA-2BC704D3B19A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{346855B3-602F-4B4E-B7BA-2BC704D3B19A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{346855B3-602F-4B4E-B7BA-2BC704D3B19A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49061414-0BF0-473A-9184-B50E42CC9969}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49061414-0BF0-473A-9184-B50E42CC9969}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49061414-0BF0-473A-9184-B50E42CC9969}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49061414-0BF0-473A-9184-B50E42CC9969}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27B295AE-D547-436E-B31D-F9621594BD33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27B295AE-D547-436E-B31D-F9621594BD33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27B295AE-D547-436E-B31D-F9621594BD33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27B295AE-D547-436E-B31D-F9621594BD33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4D30729-3A2F-4F92-BFD6-18216D970010}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4D30729-3A2F-4F92-BFD6-18216D970010}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4D30729-3A2F-4F92-BFD6-18216D970010}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4D30729-3A2F-4F92-BFD6-18216D970010}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
