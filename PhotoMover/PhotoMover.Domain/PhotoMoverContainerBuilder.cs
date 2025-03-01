@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Autofac.Extras.CommonServiceLocator;
+using CommonServiceLocator;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -44,6 +46,8 @@ public class PhotoMoverServiceProvider()
             $"Register modules for assemblies: {string.Join(Environment.NewLine, assemblies.Select(e => e.FullName))}");
         builder.RegisterAssemblyModules(assemblies);
         IContainer? container = builder.Build();
+        var serviceLocator = new AutofacServiceLocator(container);
+        ServiceLocator.SetLocatorProvider(() => serviceLocator);
         AutofacServiceProvider serviceProvider = new AutofacServiceProvider(container);
         CreateDatabase(serviceProvider);
         return serviceProvider;
