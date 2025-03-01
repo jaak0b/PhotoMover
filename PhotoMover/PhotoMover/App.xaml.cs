@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using Autofac.Extensions.DependencyInjection;
-using CommonServiceLocator;
 using Domain;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -21,7 +20,7 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        ServiceProvider = PhotoMoverServiceProvider.CreateServiceProvider();
+        ServiceProvider = PhotoMoverServiceProvider.CreateServiceProvider<PhotoMoverPhotoMoverServiceProvider>();
         ServiceProvider.GetRequiredService<MainWindow>().Show();
         base.OnStartup(e);
     }
