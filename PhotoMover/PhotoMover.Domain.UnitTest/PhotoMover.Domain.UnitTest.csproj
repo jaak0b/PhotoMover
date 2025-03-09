@@ -35,4 +35,22 @@
       <ProjectReference Include="..\PhotoMover.Domain\PhotoMover.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="TestData\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="TestData\Sony ILCE-7M3 (A7M3).arw" />
+      <AdditionalFiles Include="TestData\Sony ILCE-7M3 (A7M3).arw">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </AdditionalFiles>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="TestData\Sony ILCE-7M4 (A7M4).JPG" />
+      <AdditionalFiles Include="TestData\Sony ILCE-7M4 (A7M4).JPG">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </AdditionalFiles>
+    </ItemGroup>
+
 </Project>

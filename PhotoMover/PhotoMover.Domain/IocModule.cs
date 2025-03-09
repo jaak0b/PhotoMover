@@ -11,5 +11,6 @@ public class IocModule : Module
     {
         base.Load(builder);
         builder.RegisterType<FtpConfigurationService>().As<IFtpConfigurationService>().SingleInstance();
+        builder.RegisterType<TaskService>().As<ITaskService>().SingleInstance();
     }
 }

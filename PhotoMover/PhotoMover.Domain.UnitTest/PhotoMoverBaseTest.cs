@@ -1,9 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using Autofac.Extensions.DependencyInjection;
+using Domain.Model;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Domain.UnitTest;
 
+[NonParallelizable]
 [TestFixture]
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public abstract class PhotoMoverBaseTest
@@ -12,37 +14,61 @@ public abstract class PhotoMoverBaseTest
 
     protected Database Database { get; private set; }
 
+    protected ConfigurationModel TestConfiguration { get; private set; }
+
+
     [SetUp]
     protected virtual void Setup()
     {
-        CreateOrClearFolder(Domain.SourceFolder);
-        CreateOrClearFolder(Domain.TargetFolder);
+        CreateFolder(Domain.SourceFolder);
+        CreateFolder(Domain.TargetFolder);
 
         ServiceProvider = PhotoMoverServiceProvider.CreateServiceProvider<PhotoMoverServiceProvider>();
         Database = ServiceProvider.GetRequiredService<Database>();
         Database.Database.EnsureCreated();
+        CreateTestConfiguration();
+        CopyTestData();
+    }
+
+    protected virtual void CreateTestConfiguration()
+    {
+        TestConfiguration = new()
+        {
+            SourceFolder = Domain.SourceFolder.FullName,
+            DestinationFolder = Domain.TargetFolder.FullName,
+            Name = "UnitTest configuration"
+        };
+        Database.Add(TestConfiguration);
+    }
+
+    protected virtual void CopyTestData()
+    {
+        foreach (FileInfo file in Domain.TestData.Folder.GetFiles())
+        {
+            file.CopyTo(Path.Combine(Domain.SourceFolder.FullName, file.Name));
+        }
     }
 
     [TearDown]
     protected virtual void TearDown()
     {
         Database.Database.EnsureDeleted();
-        ServiceProvider.Dispose();
         Database.Dispose();
-        ClearFolder(Domain.BaseFolder);
+        ServiceProvider.Dispose();
+        DeleteFolder(Domain.BaseFolder);
     }
 
-    private static void CreateOrClearFolder(DirectoryInfo path)
+    private static void CreateFolder(DirectoryInfo path)
     {
         if (path.Exists)
         {
-            ClearFolder(path);
+            DeleteFolder(path);
         }
 
         path.Create();
     }
 
-    private static void ClearFolder(DirectoryInfo path)
+    private static void DeleteFolder(DirectoryInfo path)
     {
         path.Delete(true);
     }
