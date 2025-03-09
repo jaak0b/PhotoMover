@@ -3,9 +3,13 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Autofac.Extras.CommonServiceLocator;
 using CommonServiceLocator;
+using FubarDev.FtpServer;
+using FubarDev.FtpServer.AccountManagement;
+using FubarDev.FtpServer.FileSystem.DotNet;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace Domain;
@@ -33,7 +37,7 @@ public class PhotoMoverServiceProvider()
 
     protected virtual void CreateDatabase(AutofacServiceProvider serviceProvider)
     {
-        using var db = serviceProvider.GetRequiredService<Database>();
+        var db = serviceProvider.GetRequiredService<Database>();
         db.Database.EnsureCreated();
     }
 

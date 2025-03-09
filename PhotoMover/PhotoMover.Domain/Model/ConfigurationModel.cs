@@ -5,16 +5,24 @@ namespace Domain.Model;
 public class ConfigurationModel
 {
     public int Id { get; set; }
-    
-    [Required]
+
     [StringLength(100)]
-    public string Name { get; set; } = default!;
+    public string? Name { get; set; } = default!;
 
-    [Required]
     [StringLength(32000)]
-    public string SourceFolder { get; set; } = default!;
+    public string? SourceFolder { get; set; } = default!;
 
-    [Required]
     [StringLength(32000)]
-    public string DestinationFolderPath { get; set; } = default!;
+    public string? DestinationFolder { get; set; } = default!;
+
+    [StringLength(32000)]
+    public string FilePattern { get; set; } = "*";
+    
+    [StringLength(32000)]
+    public string? FolderPattern { get; set; } = default!;
+
+    public DirectoryInfo? GetSourceFolder() => Directory.Exists(SourceFolder) ? new DirectoryInfo(SourceFolder) : null;
+    
+    public DirectoryInfo? GetDestinationFolder() => Directory.Exists(DestinationFolder) ? new DirectoryInfo(DestinationFolder) : null;
+
 }

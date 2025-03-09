@@ -5,13 +5,20 @@
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
                  xmlns:local="clr-namespace:PhotoMover"
+                 xmlns:userControls="clr-namespace:PhotoMover.UserControls"
                  mc:Ignorable="d"
                  Title="Photo Mover" Height="450" Width="800">
     <Grid>
         <TabControl>
-            <TabItem Header="Main" />
-            <TabItem Header="Configurations" />
-            <TabItem Header="Settings" />
+            <TabItem Header="Main">
+                <local:MainUserControl></local:MainUserControl>
+            </TabItem>
+            <TabItem Header="Configurations">
+                <local:ConfigurationsUserControl></local:ConfigurationsUserControl>
+            </TabItem>
+            <TabItem Header="Settings">
+                <userControls:SettingsUserControl></userControls:SettingsUserControl>
+            </TabItem>
         </TabControl>
     </Grid>
 </mah:MetroWindow>
