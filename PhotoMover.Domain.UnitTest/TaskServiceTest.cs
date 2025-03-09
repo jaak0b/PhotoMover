@@ -71,9 +71,39 @@ public class TaskServiceTest : PhotoMoverBaseTest
         Service.LoadFiles(TestConfiguration, TaskType.CreatedByUser);
         Service.ProcessTasks();
         TaskModel task = Database.Tasks.Single();
-        Assert.That(
-            task.DestinationFile,
-            Is.EqualTo($"{Path.Combine(Domain.TargetFolder.FullName, folderPath, "Sony ILCE-7M3 (A7M3).arw")}"));
+        Assert.Multiple(
+            () =>
+            {
+                Assert.That(
+                    task.DestinationFile,
+                    Is.EqualTo(
+                        $"{Path.Combine(Domain.TargetFolder.FullName, folderPath, "Sony ILCE-7M3 (A7M3).arw")}"));
+                Assert.That(task.State, Is.EqualTo(State.Processed));
+            });
+    }
+
+    #endregion
+
+    #region FinalizeTask
+
+    [TestCase(ExifDirectoryBase.TagDateTime)]
+    [TestCase(ExifDirectoryBase.TagModel)]
+    [Test]
+    public void Test_FinalizeTask(int folderPattern)
+    {
+        TestConfiguration.FolderPattern = $"{folderPattern}";
+        TestConfiguration.FilePattern = "*Sony ILCE-7M3 (A7M3).arw";
+        Service.LoadFiles(TestConfiguration, TaskType.CreatedByUser);
+        Service.ProcessTasks();
+        Service.FinalizeTask();
+        TaskModel task = Database.Tasks.Single();
+        Assert.Multiple(
+            () =>
+            {
+                Assert.That(File.Exists(task.DestinationFile));
+                Assert.That(File.Exists(task.SourceFile));
+                Assert.That(task.State, Is.EqualTo(State.Moved));
+            });
     }
 
     #endregion

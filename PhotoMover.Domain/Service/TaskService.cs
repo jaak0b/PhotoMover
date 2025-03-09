@@ -15,6 +15,8 @@ public interface ITaskService
     public void LoadFiles(ConfigurationModel configuration, TaskType type);
 
     public void ProcessTasks();
+
+    public void FinalizeTask();
 }
 
 public class TaskService(Database db) : ITaskService
@@ -91,6 +93,26 @@ public class TaskService(Database db) : ITaskService
             Log.Information(
                 "{0} processed successfully. Destination: {1}", Path.GetFileName(task.SourceFile),
                 task.DestinationFile);
+        }
+    }
+
+    public void FinalizeTask()
+    {
+        List<TaskModel> tasks = db.Tasks
+            .Include(taskModel => taskModel.Configuration)
+            .Where(e => e.State == State.Processed && e.DestinationFile != null)
+            .ToList();
+        foreach (TaskModel task in tasks)
+        {
+            string folder = Path.GetDirectoryName(task.DestinationFile!) ?? throw new ApplicationException();
+            if (!System.IO.Directory.Exists(folder))
+                System.IO.Directory.CreateDirectory(folder);
+            File.Copy(task.SourceFile, task.DestinationFile!);
+            task.State = State.Moved;
+            db.Update(task);
+            Log.Information(
+                "{0} moved from '{1}' to '{2}'", Path.GetFileName(task.SourceFile),
+                task.SourceFile, task.DestinationFile);
         }
     }
 }
