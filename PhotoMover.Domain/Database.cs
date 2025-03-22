@@ -16,12 +16,12 @@ public class Database : DbContext
 
     public virtual DbSet<TaskModel> Tasks => Set<TaskModel>();
 
-    public virtual DbSet<ConfigurationModel> Configurations => Set<ConfigurationModel>();
+    public virtual DbSet<PresetModel> Configurations => Set<PresetModel>();
 
-    protected virtual DbSet<FtpConfigurationModel> FtpConfigurations => Set<FtpConfigurationModel>();
+    protected virtual DbSet<FtpPresetModel> FtpConfigurations => Set<FtpPresetModel>();
 
-    public FtpConfigurationModel? FtpConfiguration =>
-        FtpConfigurations.SingleOrDefault() ?? new FtpConfigurationModel();
+    public FtpPresetModel? FtpConfiguration =>
+        FtpConfigurations.SingleOrDefault() ?? new FtpPresetModel();
 
     public event EventHandler CollectionChanged;
 

@@ -5,16 +5,16 @@ namespace Domain.Service;
 
 public interface IFtpConfigurationService
 {
-    public FtpConfigurationModel GetFtpConfigurationModel();
+    public FtpPresetModel GetFtpConfigurationModel();
 }
 
-public class FtpConfigurationService(Database db) : IFtpConfigurationService
+public class FtpPresetService(Database db) : IFtpConfigurationService
 {
     private Database Db { get; } = db;
 
-    public FtpConfigurationModel GetFtpConfigurationModel()
+    public FtpPresetModel GetFtpConfigurationModel()
     {
-        FtpConfigurationModel? ftp = Db.FtpConfiguration;
+        FtpPresetModel? ftp = Db.FtpConfiguration;
         if (ftp == null)
         {
             ftp = new();

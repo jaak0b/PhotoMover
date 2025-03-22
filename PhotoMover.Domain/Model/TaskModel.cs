@@ -9,7 +9,7 @@ public class TaskModel()
     public int Id { get; set; }
     
     [Required]
-    public ConfigurationModel Configuration { get; set; } = default!;
+    public PresetModel Preset { get; set; } = default!;
 
     [Required]
     [StringLength(32000)]

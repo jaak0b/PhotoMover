@@ -2,9 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Model;
 
-public class FtpConfigurationModel : ConfigurationModel
+public class FtpPresetModel : PresetModel
 {
-    public FtpConfigurationModel()
+    public FtpPresetModel()
     {
         
     }

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Model;
 
-public class ConfigurationModel
+public class PresetModel
 {
     public int Id { get; set; }
 

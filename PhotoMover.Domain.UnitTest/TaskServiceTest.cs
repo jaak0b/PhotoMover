@@ -18,19 +18,19 @@ public class TaskServiceTest : PhotoMoverBaseTest
     [TestCase("*.JPG", "*.JPG", Domain.TestData.JpgCount)]
     [TestCase(".JPG", "*.JPG", Domain.TestData.JpgCount)]
     [Test]
-    public void Test_LoadFiles(string testFilter, string filter, int fileCount)
+    public void LoadFiles_MultipleFileEndings_CheckCorrectAmountOfFilesLoaded(string testFilter, string filter, int fileCount)
     {
-        TestConfiguration.FilePattern = testFilter;
-        Service.LoadFiles(TestConfiguration, TaskType.CreatedByUser);
+        TestPreset.FilePattern = testFilter;
+        Service.LoadFiles(TestPreset, TaskType.CreatedByUser);
         Assert.That(Database.Tasks.Count(), Is.EqualTo(fileCount));
         foreach (FileInfo file in Domain.SourceFolder.GetFiles(filter))
         {
             Assert.That(Database.Tasks.Count(e => e.SourceFile == file.FullName), Is.EqualTo(1));
         }
 
-        foreach (TaskModel task in Database.Tasks.Include(e => e.Configuration).ToList())
+        foreach (TaskModel task in Database.Tasks.Include(e => e.Preset).ToList())
         {
-            Assert.That(task.Configuration, Is.EqualTo(TestConfiguration));
+            Assert.That(task.Preset, Is.EqualTo(TestPreset));
             Assert.That(task.State, Is.EqualTo(State.Created));
             Assert.That(task.Type, Is.EqualTo(TaskType.CreatedByUser));
         }
@@ -38,22 +38,22 @@ public class TaskServiceTest : PhotoMoverBaseTest
 
 
     [Test]
-    public void Test_LoadFiles_Invalid_DestinationFolder()
+    public void LoadFiles_ConfigurationDestinationFolderHasNoneExistingPath_DoesNotThrowAnException()
     {
-        TestConfiguration.DestinationFolder = Path.Combine(
+        TestPreset.DestinationFolder = Path.Combine(
             Path.GetTempPath(), "99999999999999999999999999999999999999");
-        Assert.That(Directory.Exists(TestConfiguration.DestinationFolder), Is.False);
-        Assert.DoesNotThrow(() => Service.LoadFiles(TestConfiguration, TaskType.CreatedByUser));
+        Assert.That(Directory.Exists(TestPreset.DestinationFolder), Is.False);
+        Assert.DoesNotThrow(() => Service.LoadFiles(TestPreset, TaskType.CreatedByUser));
         Assert.That(Database.Tasks.Count(), Is.EqualTo(0));
     }
 
     [Test]
-    public void Test_LoadFiles_Invalid_SourceFolder()
+    public void LoadFiles_ConfigurationSourceFolderHasNoneExistingPath_DoesNotThrowAnException()
     {
-        TestConfiguration.SourceFolder = Path.Combine(
+        TestPreset.SourceFolder = Path.Combine(
             Path.GetTempPath(), "99999999999999999999999999999999999999");
-        Assert.That(Directory.Exists(TestConfiguration.SourceFolder), Is.False);
-        Assert.DoesNotThrow(() => Service.LoadFiles(TestConfiguration, TaskType.CreatedByUser));
+        Assert.That(Directory.Exists(TestPreset.SourceFolder), Is.False);
+        Assert.DoesNotThrow(() => Service.LoadFiles(TestPreset, TaskType.CreatedByUser));
         Assert.That(Database.Tasks.Count(), Is.EqualTo(0));
     }
 
@@ -64,11 +64,11 @@ public class TaskServiceTest : PhotoMoverBaseTest
     [TestCase(ExifDirectoryBase.TagDateTime, "2019 04 24")]
     [TestCase(ExifDirectoryBase.TagModel, "ILCE-7M3")]
     [Test()]
-    public void Test_ProcessTasks(int folderPattern, string folderPath)
+    public void ProcessTasks_SingleFolderPattern_DestinationFileCorrect(int folderPattern, string folderPath)
     {
-        TestConfiguration.FolderPattern = $"{folderPattern}";
-        TestConfiguration.FilePattern = "*Sony ILCE-7M3 (A7M3).arw";
-        Service.LoadFiles(TestConfiguration, TaskType.CreatedByUser);
+        TestPreset.FolderPattern = $"{folderPattern}";
+        TestPreset.FilePattern = "*Sony ILCE-7M3 (A7M3).arw";
+        Service.LoadFiles(TestPreset, TaskType.CreatedByUser);
         Service.ProcessTasks();
         TaskModel task = Database.Tasks.Single();
         Assert.Multiple(
@@ -82,6 +82,26 @@ public class TaskServiceTest : PhotoMoverBaseTest
             });
     }
 
+    
+    [Test()]
+    public void ProcessTasks_TwoFolderPattern_DestinationFileCorrect()
+    {
+        TestPreset.FolderPattern = $"{ExifDirectoryBase.TagModel}/{ExifDirectoryBase.TagDateTime}";
+        TestPreset.FilePattern = "*Sony ILCE-7M3 (A7M3).arw";
+        Service.LoadFiles(TestPreset, TaskType.CreatedByUser);
+        Service.ProcessTasks();
+        TaskModel task = Database.Tasks.Single();
+        Assert.Multiple(
+            () =>
+            {
+                Assert.That(
+                    task.DestinationFile,
+                    Is.EqualTo(
+                        $"{Path.Combine(Domain.TargetFolder.FullName, Path.Combine("ILCE-7M3","2019 04 24"), "Sony ILCE-7M3 (A7M3).arw")}"));
+                Assert.That(task.State, Is.EqualTo(State.Processed));
+            });
+    }
+
     #endregion
 
     #region FinalizeTask
@@ -89,11 +109,11 @@ public class TaskServiceTest : PhotoMoverBaseTest
     [TestCase(ExifDirectoryBase.TagDateTime)]
     [TestCase(ExifDirectoryBase.TagModel)]
     [Test]
-    public void Test_FinalizeTask(int folderPattern)
+    public void FinalizeTask_SingleFolderPattern_MoveFileToCorrectFolder(int folderPattern)
     {
-        TestConfiguration.FolderPattern = $"{folderPattern}";
-        TestConfiguration.FilePattern = "*Sony ILCE-7M3 (A7M3).arw";
-        Service.LoadFiles(TestConfiguration, TaskType.CreatedByUser);
+        TestPreset.FolderPattern = $"{folderPattern}";
+        TestPreset.FilePattern = "*Sony ILCE-7M3 (A7M3).arw";
+        Service.LoadFiles(TestPreset, TaskType.CreatedByUser);
         Service.ProcessTasks();
         Service.FinalizeTask();
         TaskModel task = Database.Tasks.Single();

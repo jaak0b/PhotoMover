@@ -4,13 +4,13 @@ using FubarDev.FtpServer.AccountManagement;
 
 namespace Domain.Ftp;
 
-public class PhotoMoverMembershipProvider(FtpConfigurationService ftpConfigurationService) : IMembershipProvider
+public class PhotoMoverMembershipProvider(FtpPresetService ftpPresetService) : IMembershipProvider
 {
-    public FtpConfigurationService FtpConfigurationService { get; } = ftpConfigurationService;
+    public FtpPresetService FtpPresetService { get; } = ftpPresetService;
 
     public Task<MemberValidationResult> ValidateUserAsync(string username, string password)
     {
-        FtpConfigurationModel config = FtpConfigurationService.GetFtpConfigurationModel();
+        FtpPresetModel config = FtpPresetService.GetFtpConfigurationModel();
         if (username == config.FtpUserName &&
             password == config.FtpPassword)
         {

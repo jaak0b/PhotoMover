@@ -7,17 +7,17 @@ using Microsoft.Extensions.Options;
 
 namespace Domain.Ftp;
 
-public class FtpProvider(FtpConfigurationService ftpConfigurationService) : IDisposable
+public class FtpProvider(FtpPresetService ftpPresetService) : IDisposable
 {
-    public FtpConfigurationService FtpConfigurationService { get; } = ftpConfigurationService;
+    public FtpPresetService FtpPresetService { get; } = ftpPresetService;
 
-    private FtpConfigurationModel? _config;
+    private FtpPresetModel? _config;
     private ServiceProvider? _collection;
     private IFtpServerHost? _serverHost;
 
     public bool Build()
     {
-        _config = FtpConfigurationService.GetFtpConfigurationModel();
+        _config = FtpPresetService.GetFtpConfigurationModel();
         if (!_config.IsActive)
             return false;
         var services = new ServiceCollection();

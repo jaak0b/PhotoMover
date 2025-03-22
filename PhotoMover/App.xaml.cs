@@ -20,9 +20,16 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        ServiceProvider = PhotoMoverServiceProvider.CreateServiceProvider<PhotoMoverPhotoMoverServiceProvider>();
-        ServiceProvider.GetRequiredService<MainWindow>().Show();
-        base.OnStartup(e);
+        try
+        {
+            ServiceProvider = PhotoMoverServiceProvider.CreateServiceProvider<PhotoMoverPhotoMoverServiceProvider>();
+            ServiceProvider.GetRequiredService<MainWindow>().Show();
+            base.OnStartup(e);
+        }
+        catch (Exception exception)
+        {
+            MessageBox.Show(exception.Message);
+        }
     }
 
     protected override void OnExit(ExitEventArgs e)

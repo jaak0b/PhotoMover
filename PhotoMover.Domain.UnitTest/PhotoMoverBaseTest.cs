@@ -14,7 +14,7 @@ public abstract class PhotoMoverBaseTest
 
     protected Database Database { get; private set; }
 
-    protected ConfigurationModel TestConfiguration { get; private set; }
+    protected PresetModel TestPreset { get; private set; }
 
 
     [SetUp]
@@ -32,13 +32,13 @@ public abstract class PhotoMoverBaseTest
 
     protected virtual void CreateTestConfiguration()
     {
-        TestConfiguration = new()
+        TestPreset = new()
         {
             SourceFolder = Domain.SourceFolder.FullName,
             DestinationFolder = Domain.TargetFolder.FullName,
             Name = "UnitTest configuration"
         };
-        Database.Add(TestConfiguration);
+        Database.Add(TestPreset);
     }
 
     protected virtual void CopyTestData()

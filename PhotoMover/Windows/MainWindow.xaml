@@ -8,17 +8,7 @@
                  xmlns:userControls="clr-namespace:PhotoMover.UserControls"
                  mc:Ignorable="d"
                  Title="Photo Mover" Height="450" Width="800">
-    <Grid>
-        <TabControl>
-            <TabItem Header="Main">
-                <local:MainUserControl></local:MainUserControl>
-            </TabItem>
-            <TabItem Header="Configurations">
-                <local:ConfigurationsUserControl></local:ConfigurationsUserControl>
-            </TabItem>
-            <TabItem Header="Settings">
-                <userControls:SettingsUserControl></userControls:SettingsUserControl>
-            </TabItem>
-        </TabControl>
-    </Grid>
+    <NavigationWindow>
+
+    </NavigationWindow>
 </mah:MetroWindow>
