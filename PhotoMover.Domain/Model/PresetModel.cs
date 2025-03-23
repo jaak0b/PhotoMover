@@ -7,7 +7,7 @@ public class PresetModel
     public int Id { get; set; }
 
     [StringLength(100)]
-    public string? Name { get; set; } = default!;
+    public string? Name { get; set; } = "New preset!";
 
     [StringLength(32000)]
     public string? SourceFolder { get; set; } = default!;

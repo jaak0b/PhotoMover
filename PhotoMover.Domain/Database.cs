@@ -16,7 +16,7 @@ public class Database : DbContext
 
     public virtual DbSet<TaskModel> Tasks => Set<TaskModel>();
 
-    public virtual DbSet<PresetModel> Configurations => Set<PresetModel>();
+    public virtual DbSet<PresetModel> Presets => Set<PresetModel>();
 
     protected virtual DbSet<FtpPresetModel> FtpConfigurations => Set<FtpPresetModel>();
 
