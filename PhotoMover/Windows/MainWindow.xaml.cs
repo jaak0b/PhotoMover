@@ -1,12 +1,12 @@
 using System.Windows;
-using MahApps.Metro.Controls;
 
-namespace PhotoMover.Windows;
-
-public partial class MainWindow : MetroWindow
+namespace PhotoMover.Windows
 {
+  public partial class MainWindow : Window
+  {
     public MainWindow()
     {
-        InitializeComponent();
+      InitializeComponent();
     }
+  }
 }

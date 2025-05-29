@@ -2,15 +2,16 @@
 using Domain.Service;
 using JetBrains.Annotations;
 
-namespace Domain;
-
-[UsedImplicitly]
-public class IocModule : Module
+namespace Domain
 {
+  [UsedImplicitly]
+  public class IocModule : Module
+  {
     protected override void Load(ContainerBuilder builder)
     {
-        base.Load(builder);
-        builder.RegisterType<FtpPresetService>().As<IFtpConfigurationService>().SingleInstance();
-        builder.RegisterType<TaskService>().As<ITaskService>().SingleInstance();
+      base.Load(builder);
+      builder.RegisterType<FtpPresetService>().As<IFtpConfigurationService>().SingleInstance();
+      builder.RegisterType<TaskService>().As<ITaskService>().SingleInstance();
     }
+  }
 }

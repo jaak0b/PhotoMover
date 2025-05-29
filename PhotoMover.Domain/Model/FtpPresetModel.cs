@@ -1,14 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Domain.Model;
-
-public class FtpPresetModel : PresetModel
+namespace Domain.Model
 {
+  public class FtpPresetModel : PresetModel
+  {
     public FtpPresetModel()
     {
-        
     }
-    
+
     public bool IsActive { get; set; }
 
     [StringLength(40)]
@@ -19,4 +18,5 @@ public class FtpPresetModel : PresetModel
 
     [StringLength(1000)]
     public string FtpPassword { get; set; } = "";
+  }
 }

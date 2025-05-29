@@ -8,23 +8,23 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Autofac" Version="8.2.0" />
-      <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
-      <PackageReference Include="Autofac.Extras.CommonServiceLocator" Version="6.1.0" />
-      <PackageReference Include="FluentValidation" Version="11.11.0" />
-      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
-      <PackageReference Include="FubarDev.FtpServer" Version="3.1.2" />
-      <PackageReference Include="FubarDev.FtpServer.FileSystem.DotNet" Version="3.1.2" />
-      <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
-      <PackageReference Include="MetadataExtractor" Version="2.8.1" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.2" />
-      <PackageReference Include="Serilog" Version="4.2.0" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+        <PackageReference Include="Autofac" Version="8.2.0"/>
+        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0"/>
+        <PackageReference Include="Autofac.Extras.CommonServiceLocator" Version="6.1.0"/>
+        <PackageReference Include="FluentValidation" Version="11.11.0"/>
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0"/>
+        <PackageReference Include="FubarDev.FtpServer" Version="3.1.2"/>
+        <PackageReference Include="FubarDev.FtpServer.FileSystem.DotNet" Version="3.1.2"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2024.3.0"/>
+        <PackageReference Include="MetadataExtractor" Version="2.8.1"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.2"/>
+        <PackageReference Include="Serilog" Version="4.2.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Validator\" />
+        <Folder Include="Validator\"/>
     </ItemGroup>
 
 </Project>

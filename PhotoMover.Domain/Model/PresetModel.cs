@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Domain.Model;
-
-public class PresetModel
+namespace Domain.Model
 {
+  public class PresetModel
+  {
     public int Id { get; set; }
 
     [StringLength(100)]
@@ -17,12 +17,18 @@ public class PresetModel
 
     [StringLength(32000)]
     public string FilePattern { get; set; } = "*";
-    
+
     [StringLength(32000)]
     public string? FolderPattern { get; set; } = default!;
 
-    public DirectoryInfo? GetSourceFolder() => Directory.Exists(SourceFolder) ? new DirectoryInfo(SourceFolder) : null;
-    
-    public DirectoryInfo? GetDestinationFolder() => Directory.Exists(DestinationFolder) ? new DirectoryInfo(DestinationFolder) : null;
+    public DirectoryInfo? GetSourceFolder()
+    {
+      return Directory.Exists(SourceFolder) ? new DirectoryInfo(SourceFolder) : null;
+    }
 
+    public DirectoryInfo? GetDestinationFolder()
+    {
+      return Directory.Exists(DestinationFolder) ? new DirectoryInfo(DestinationFolder) : null;
+    }
+  }
 }

@@ -4,27 +4,30 @@ using Domain;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace PhotoMover;
-
-[UsedImplicitly]
-public class PhotoMoverPhotoMoverServiceProvider : PhotoMoverServiceProvider
+namespace PhotoMover
 {
+  [UsedImplicitly]
+  public class PhotoMoverPhotoMoverServiceProvider : PhotoMoverServiceProvider
+  {
     private static string FullPath =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "PhotoMover", "Data");
+      Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "PhotoMover", "Data");
 
     private static string FullFilePath =>
-        Path.Combine(FullPath, "db.sqlite");
+      Path.Combine(FullPath, "db.sqlite");
 
     protected override void ConfigureDatabase(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite($"Data Source={FullFilePath}");
+      optionsBuilder.UseSqlite($"Data Source={FullFilePath}");
     }
 
     protected override void CreateDatabase(AutofacServiceProvider serviceProvider)
     {
-        if (!Directory.Exists(FullPath))
-            Directory.CreateDirectory(FullPath);
-        
-        base.CreateDatabase(serviceProvider);
+      if (!Directory.Exists(FullPath))
+      {
+        Directory.CreateDirectory(FullPath);
+      }
+
+      base.CreateDatabase(serviceProvider);
     }
+  }
 }

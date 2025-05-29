@@ -1,8 +1,9 @@
-namespace Domain.Model;
-
-public enum TaskType
+namespace Domain.Model
 {
+  public enum TaskType
+  {
     Default,
     CreatedByUser,
     CreatedByFtp
+  }
 }

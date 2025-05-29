@@ -1,13 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 
-namespace Domain.Model;
-
-[UsedImplicitly]
-public class TaskModel()
+namespace Domain.Model
 {
+  [UsedImplicitly]
+  public class TaskModel()
+  {
     public int Id { get; set; }
-    
+
     [Required]
     public PresetModel Preset { get; set; } = default!;
 
@@ -23,4 +23,5 @@ public class TaskModel()
     public TaskType Type { get; set; }
 
     public State State { get; set; } = State.Created;
+  }
 }
