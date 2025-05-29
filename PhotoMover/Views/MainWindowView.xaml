@@ -12,11 +12,6 @@
        <viewModel:MainWindowViewModel></viewModel:MainWindowViewModel>
     </UserControl.DataContext>
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition  Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="AUTO"/>
             <RowDefinition Height="AUTO"/>
@@ -43,10 +38,7 @@
                             <Button Grid.Row="0" Grid.Column="2" CommandParameter="{Binding}" Command="{Binding DataContext.OpenPresetSettingsCommand, RelativeSource={RelativeSource  AncestorType=UserControl }}" Padding="2" Margin="2" >
                                 <iconPacks:PackIconBootstrapIcons Kind="Gear" />
                             </Button>
-                            <Button Grid.Row="0" Grid.Column="3" CommandParameter="{Binding}" Command="{Binding DataContext.OpenPresetSettingsCommand, RelativeSource={RelativeSource  AncestorType=UserControl }}" Padding="2" Margin="2" >
-                                <iconPacks:PackIconBootstrapIcons Kind="ClockHistory" />
-                            </Button>
-                            <Button Grid.Row="0" Grid.Column="4" CommandParameter="{Binding}" Command="{Binding DataContext.OpenPresetSettingsCommand, RelativeSource={RelativeSource  AncestorType=UserControl }}" Padding="2" Margin="2" >
+                            <Button Grid.Row="0" Grid.Column="4" CommandParameter="{Binding}" Command="{Binding DataContext.RunPresetCommand, RelativeSource={RelativeSource  AncestorType=UserControl }}" Padding="2" Margin="2" >
                                 <iconPacks:PackIconBootstrapIcons Kind="PlayFill" />
                             </Button>
                             <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Stretch" Padding="2,0" ></Border>
@@ -57,12 +49,26 @@
                                 <Label Content="{Binding DestinationFolder}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Grid>
+                        <Border.ContextMenu>
+                            <ContextMenu DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Border}}">
+                                <MenuItem Header="Delete" Click="MenuItem_OnClick" >
+                                    <MenuItem.Icon>
+                                        <iconPacks:PackIconBootstrapIcons Kind="Trash" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Border.ContextMenu>
                     </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" CommandParameter="{Binding}" Command="{Binding DataContext.OpenPresetSettingsCommand, RelativeSource={RelativeSource  AncestorType=UserControl }}" Padding="2" Margin="2" HorizontalContentAlignment="Left" BorderThickness="0" Background="Transparent" >
+        <Button Grid.Row="1" Command="{Binding AddPresetCommand}" Padding="2" Margin="2" HorizontalContentAlignment="Left" BorderThickness="0" Background="Transparent" >
             <iconPacks:PackIconBootstrapIcons Kind="Plus" />
         </Button>
+        
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Tasks}" >
+            
+            
+        </DataGrid>
     </Grid>
 </UserControl>

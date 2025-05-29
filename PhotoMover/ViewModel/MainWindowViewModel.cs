@@ -17,6 +17,8 @@ public class MainWindowViewModel : Core.ViewModel
         _db = ServiceLocator.Current.GetRequiredService<Database>();
         _db.CollectionChanged += Db_OnCollectionChanged;
         OpenPresetSettingsCommand = ServiceLocator.Current.GetRequiredService<OpenPresetSettingsCommand>();
+        AddPresetCommand = ServiceLocator.Current.GetRequiredService<AddPresetCommand>();
+        RunPresetCommand = ServiceLocator.Current.GetRequiredService<RunPresetCommand>();
     }
 
     private void Db_OnCollectionChanged(object? sender, EventArgs e)
@@ -26,5 +28,12 @@ public class MainWindowViewModel : Core.ViewModel
 
     public ObservableCollection<PresetModel> Presets => new(_db.Presets.Select(e => e ));
     
+    public ObservableCollection<TaskModel> Tasks => new(_db.Tasks.Select(e => e ));
+
     public OpenPresetSettingsCommand OpenPresetSettingsCommand { get; }
+    
+    public AddPresetCommand AddPresetCommand { get; }
+    
+    public RunPresetCommand RunPresetCommand { get; }
+
 }

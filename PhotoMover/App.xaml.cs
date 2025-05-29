@@ -1,7 +1,12 @@
 ﻿using System.Windows;
+using System.Windows.Navigation;
 using Autofac.Extensions.DependencyInjection;
+using CommonServiceLocator;
 using Domain;
+using Domain.Model;
+using MahApps.Metro.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using PhotoMover.Windows;
 using Serilog;
 
 namespace PhotoMover;
@@ -23,6 +28,12 @@ public partial class App : Application
         try
         {
             ServiceProvider = PhotoMoverServiceProvider.CreateServiceProvider<PhotoMoverPhotoMoverServiceProvider>();
+
+         // var x=  new PresetModel() { Name = "Test", SourceFolder = "F:\\DCIM", DestinationFolder = "C:\\Users\\jakob\\Downloads\\New folder", FolderPattern = "306"};
+         //
+         //  ServiceLocator.Current.GetRequiredService<Database>().Add(x);
+
+
             ServiceProvider.GetRequiredService<MainWindow>().Show();
             base.OnStartup(e);
         }

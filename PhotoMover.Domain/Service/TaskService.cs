@@ -129,8 +129,15 @@ public class TaskService(Database db) : ITaskService
                 string folder = Path.GetDirectoryName(task.DestinationFile!) ?? throw new ApplicationException();
                 if (!System.IO.Directory.Exists(folder))
                     System.IO.Directory.CreateDirectory(folder);
-                File.Copy(task.SourceFile, task.DestinationFile!);
-                task.State = State.Moved;
+                if (!File.Exists(task.DestinationFile))
+                {
+                    File.Copy(task.SourceFile, task.DestinationFile!);
+                    task.State = State.Moved; 
+                }
+                else
+                {
+                    task.State = State.Skipped; 
+                }
                 db.Update(task);
                 Log.Information(
                     "{0} moved from '{1}' to '{2}'", Path.GetFileName(task.SourceFile),

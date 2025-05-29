@@ -14,5 +14,7 @@ public class IocModule : Module
         builder.RegisterType<MainWindow>();
         builder.RegisterType<MainWindowViewModel>();
         builder.RegisterType<OpenPresetSettingsCommand>();
+        builder.RegisterType<AddPresetCommand>();
+        builder.RegisterType<RunPresetCommand>();
     }
 }

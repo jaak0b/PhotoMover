@@ -4,5 +4,6 @@ public enum State
 {
     Created = 0,
     Processed = 1,
-    Moved = 2
+    Moved = 2,
+    Skipped = 2
 }
