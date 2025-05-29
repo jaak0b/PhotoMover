@@ -111,6 +111,9 @@ public class TaskService(Database db) : ITaskService
             {
                 Log.Error(e, $"Failed to process task {task}");
                 db.Database.RollbackTransaction();
+
+                task.State = State.Error;
+                db.Update(task);
             }
         }
     }
@@ -132,12 +135,13 @@ public class TaskService(Database db) : ITaskService
                 if (!File.Exists(task.DestinationFile))
                 {
                     File.Copy(task.SourceFile, task.DestinationFile!);
-                    task.State = State.Moved; 
+                    task.State = State.Moved;
                 }
                 else
                 {
-                    task.State = State.Skipped; 
+                    task.State = State.Skipped;
                 }
+
                 db.Update(task);
                 Log.Information(
                     "{0} moved from '{1}' to '{2}'", Path.GetFileName(task.SourceFile),
@@ -148,6 +152,9 @@ public class TaskService(Database db) : ITaskService
             {
                 Log.Error(e, $"Failed to finalize task {task}");
                 db.Database.RollbackTransaction();
+
+                task.State = State.Error;
+                db.Update(task);
             }
         }
     }
