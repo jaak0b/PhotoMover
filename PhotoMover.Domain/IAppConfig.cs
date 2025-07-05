@@ -10,6 +10,7 @@ namespace Domain
 
     public string FolderTarget { get; set; }
 
+    [Option(DefaultValue = "*")]
     public string FilePattern { get; set; }
 
     public string FolderPattern { get; set; }
@@ -19,6 +20,7 @@ namespace Domain
 
   public interface IFtpConfig : INotifyPropertyChanged
   {
+    [Option(DefaultValue = false)]
     public bool IsActive { get; set; }
 
     [Option(DefaultValue = "127.0.0.1")]
