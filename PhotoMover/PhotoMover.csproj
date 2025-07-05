@@ -26,8 +26,4 @@
         <ProjectReference Include="..\PhotoMover.Domain\PhotoMover.Domain.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Views\"/>
-    </ItemGroup>
-
 </Project>

@@ -1,18 +1,13 @@
-using Domain.Model;
-using Domain.Service;
 using FubarDev.FtpServer.AccountManagement;
 
 namespace Domain.Ftp
 {
-  public class PhotoMoverMembershipProvider(FtpPresetService ftpPresetService) : IMembershipProvider
+  public class PhotoMoverMembershipProvider(IAppConfig appConfig) : IMembershipProvider
   {
-    public FtpPresetService FtpPresetService { get; } = ftpPresetService;
-
     public Task<MemberValidationResult> ValidateUserAsync(string username, string password)
     {
-      FtpPresetModel config = FtpPresetService.GetFtpConfigurationModel();
-      if (username == config.FtpUserName &&
-          password == config.FtpPassword)
+      if (username == appConfig.FtpConfig.Credentials?.UserName &&
+          password == appConfig.FtpConfig.Credentials?.Password)
       {
         return Task.FromResult(
                                new MemberValidationResult(

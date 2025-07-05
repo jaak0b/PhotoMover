@@ -4,6 +4,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid />
+        Title="MainWindow" Height="450" Width="800" Initialized="MainWindow_OnInitialized">
+    <TabControl>
+        <TabItem Header="Main">
+
+        </TabItem>
+        <TabItem Header="Settings" Name="SettingsTabItem" />
+    </TabControl>
 </Window>

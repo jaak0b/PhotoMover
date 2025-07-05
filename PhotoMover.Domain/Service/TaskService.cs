@@ -2,61 +2,60 @@ using System.Collections.Immutable;
 using System.Globalization;
 using Domain.Model;
 using MetadataExtractor;
-using MetadataExtractor.Formats.Exif;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using Serilog.Core;
 using Directory = MetadataExtractor.Directory;
 
 namespace Domain.Service
 {
   public interface ITaskService
   {
-    public void LoadFiles(PresetModel preset, TaskType type);
+    public void LoadFiles(string sourceFolder, TaskType type);
 
     public void ProcessTasks();
 
     public void FinalizeTask();
   }
 
-  public class TaskService(Database db) : ITaskService
+  public class TaskService(Database db, IAppConfig appConfig) : ITaskService
   {
     private const string ExifDateFormat = "yyyy:MM:dd HH:mm:ss";
 
-    public void LoadFiles(PresetModel preset, TaskType type)
+    public void LoadFiles(string sourceFolder, TaskType type)
     {
       try
       {
-        if (preset.GetDestinationFolder() is null)
+        if (!System.IO.Directory.Exists(appConfig.FolderTarget))
         {
           Log.Error(
                     "Destination Folder {0} does not exist. Files will not be loaded!",
-                    preset.DestinationFolder);
+                    appConfig.FolderTarget);
           return;
         }
 
-        if (preset.GetSourceFolder() is null)
+        if (!System.IO.Directory.Exists(sourceFolder))
         {
           return;
         }
 
-        string filePattern = preset.FilePattern.Trim();
+        string filePattern = appConfig.FilePattern.Trim();
         if (!filePattern.StartsWith("*"))
         {
           filePattern = "*" + filePattern;
         }
 
-        List<TaskModel> files = preset.GetSourceFolder()!.GetFiles(filePattern, SearchOption.AllDirectories)
-                                      .Select(
-                                              e => new TaskModel()
+
+        List<TaskModel> files = new DirectoryInfo(sourceFolder)
+                               .GetFiles(filePattern, SearchOption.AllDirectories)
+                               .Select(
+                                       fileInfo => new TaskModel()
                                                    {
-                                                     Preset = preset,
                                                      State = State.Created,
-                                                     SourceFile = e.FullName,
+                                                     SourceFile = fileInfo.FullName,
                                                      Type = type
                                                    }).ToList();
         db.AddRange(files);
-        Log.Information("Loaded {0} files for configuration {1}", files.Count, preset.Name);
+        Log.Information("Loaded {0} files.", files.Count);
       }
       catch (Exception e)
       {
@@ -67,8 +66,8 @@ namespace Domain.Service
 
     public void ProcessTasks()
     {
-      List<TaskModel> tasks = db.Tasks.Include(taskModel => taskModel.Preset)
-                                .Where(e => e.State == State.Created && e.Preset.DestinationFolder != null)
+      List<TaskModel> tasks = db.Tasks
+                                .Where(taskModel => taskModel.State == State.Created)
                                 .ToList();
       foreach (TaskModel task in tasks)
       {
@@ -77,9 +76,9 @@ namespace Domain.Service
           db.Database.BeginTransaction();
           IReadOnlyList<Directory> metadata = ImageMetadataReader.ReadMetadata(task.SourceFile);
           ImmutableSortedSet<int> tags =
-            task.Preset.FolderPattern?.Split("/")?.Select(int.Parse)?.ToImmutableSortedSet() ?? [];
+            appConfig.FolderPattern?.Split("/")?.Select(int.Parse)?.ToImmutableSortedSet() ?? [];
 
-          string destinationFolder = task.Preset.DestinationFolder!;
+          string destinationFolder = appConfig.FolderTarget;
           foreach (int tagType in tags)
           {
             string value = metadata.Where(e => e.HasTagName(tagType))
@@ -130,8 +129,7 @@ namespace Domain.Service
     public void FinalizeTask()
     {
       List<TaskModel> tasks = db.Tasks
-                                .Include(taskModel => taskModel.Preset)
-                                .Where(e => e.State == State.Processed && e.DestinationFile != null)
+                                .Where(taskModel => taskModel.State == State.Processed)
                                 .ToList();
       foreach (TaskModel task in tasks)
       {

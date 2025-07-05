@@ -16,13 +16,6 @@ namespace Domain
 
     public virtual DbSet<TaskModel> Tasks => Set<TaskModel>();
 
-    public virtual DbSet<PresetModel> Presets => Set<PresetModel>();
-
-    protected virtual DbSet<FtpPresetModel> FtpConfigurations => Set<FtpPresetModel>();
-
-    public FtpPresetModel? FtpConfiguration =>
-      FtpConfigurations.SingleOrDefault() ?? new FtpPresetModel();
-
     public event EventHandler CollectionChanged;
 
     override public EntityEntry<TEntity> Add<TEntity>(TEntity obj) where TEntity : class

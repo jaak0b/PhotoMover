@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Autofac.Extensions.DependencyInjection;
+using CommonServiceLocator;
 using Domain.Model;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,10 +13,9 @@ namespace Domain.UnitTest
   {
     protected AutofacServiceProvider ServiceProvider { get; private set; }
 
+    protected IAppConfig AppConfig { get; private set; }
+
     protected Database Database { get; private set; }
-
-    protected PresetModel TestPreset { get; private set; }
-
 
     [SetUp]
     protected virtual void Setup()
@@ -32,13 +32,9 @@ namespace Domain.UnitTest
 
     protected virtual void CreateTestConfiguration()
     {
-      TestPreset = new()
-                   {
-                     SourceFolder = Domain.SourceFolder.FullName,
-                     DestinationFolder = Domain.TargetFolder.FullName,
-                     Name = "UnitTest configuration"
-                   };
-      Database.Add(TestPreset);
+      AppConfig = ServiceLocator.Current.GetRequiredService<IAppConfig>();
+      AppConfig.FolderSource = Domain.SourceFolder.FullName;
+      AppConfig.FolderTarget = Domain.TargetFolder.FullName;
     }
 
     protected virtual void CopyTestData()

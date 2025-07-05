@@ -9,9 +9,6 @@ namespace Domain.Model
     public int Id { get; set; }
 
     [Required]
-    public PresetModel Preset { get; set; } = default!;
-
-    [Required]
     [StringLength(32000)]
     public string SourceFile { get; set; } = default!;
 

@@ -1,12 +1,9 @@
-﻿using Autofac;
+using Autofac;
 using Config.Net;
-using Domain;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
-using PhotoMover.Views;
-using PhotoMover.Windows;
 
-namespace PhotoMover.Classes
+namespace Domain.UnitTest
 {
   [UsedImplicitly]
   public class IocModule : Module
@@ -14,8 +11,6 @@ namespace PhotoMover.Classes
     protected override void Load(ContainerBuilder builder)
     {
       base.Load(builder);
-      builder.RegisterType<MainWindow>().SingleInstance();
-      builder.RegisterType<SettingsUserControl>().SingleInstance();
       RegisterAppConfig(builder);
       RegisterDatabase(builder);
     }
@@ -24,7 +19,7 @@ namespace PhotoMover.Classes
     {
       builder.Register(
                        _ => new ConfigurationBuilder<IAppConfig>()
-                           .UseIniFile(Constants.AppConfigFilePath.Value)
+                           .UseInMemoryDictionary()
                            .Build())
              .As<IAppConfig>()
              .SingleInstance();
@@ -36,12 +31,11 @@ namespace PhotoMover.Classes
                        _ =>
                        {
                          DbContextOptionsBuilder<Database> optionsBuilder = new();
-                         optionsBuilder.UseSqlite($"Data Source={Constants.SqlLiteFilePath.Value}");
+                         optionsBuilder.UseInMemoryDatabase(Constants.AppName + "Database");
                          return new Database(optionsBuilder.Options);
                        })
              .As<Database>()
-             .AsImplementedInterfaces()
-             .InstancePerDependency();
+             .InstancePerLifetimeScope();
     }
   }
 }

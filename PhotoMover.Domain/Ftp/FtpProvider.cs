@@ -1,48 +1,51 @@
-using Domain.Model;
 using Domain.Service;
 using FubarDev.FtpServer;
 using FubarDev.FtpServer.FileSystem.DotNet;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Domain.Ftp
 {
-  public class FtpProvider(FtpPresetService ftpPresetService) : IDisposable
+  public class FtpProvider(IAppConfig appConfig, ITaskService taskService) : IDisposable
   {
-    public FtpPresetService FtpPresetService { get; } = ftpPresetService;
-
-    private FtpPresetModel? _config;
     private ServiceProvider? _collection;
     private IFtpServerHost? _serverHost;
+    private FileSystemWatcher _fileSystemWatcher = new FileSystemWatcher();
 
     public bool Build()
     {
-      _config = FtpPresetService.GetFtpConfigurationModel();
-      if (!_config.IsActive)
+      if (!appConfig.FtpConfig.IsActive)
       {
         return false;
       }
 
+      if (!Directory.Exists(appConfig.FtpConfig.FolderSource))
+        return false;
+
+      _fileSystemWatcher.Path = appConfig.FtpConfig.FolderSource;
+      _fileSystemWatcher.Created += FileSystemWatcher_OnCreated;
+      _fileSystemWatcher.EnableRaisingEvents = true;
+
       ServiceCollection services = new();
 
-      services.Configure<DotNetFileSystemOptions>(
-                                                  opt => opt.RootPath = _config.SourceFolder);
-
+      services.Configure<DotNetFileSystemOptions>(options => options.RootPath = appConfig.FtpConfig.FolderSource);
       services.AddFtpServer(
                             builder => builder
                                       .UseDotNetFileSystem()
                                       .EnableAnonymousAuthentication());
-
-      services.Configure<FtpServerOptions>(opt => opt.ServerAddress = _config.FtpServerIpAddress);
+      services.Configure<FtpServerOptions>(opt => opt.ServerAddress = appConfig.FtpConfig.FtpServerIpAddress);
 
       _collection = services.BuildServiceProvider();
       _serverHost = _collection.GetRequiredService<IFtpServerHost>();
       return true;
     }
 
+    private void FileSystemWatcher_OnCreated(object sender, FileSystemEventArgs e)
+    {
+    }
+
     public async Task<bool> StartAsync()
     {
-      if (_config?.IsActive == false || _serverHost is null)
+      if (appConfig.FtpConfig?.IsActive == false || _serverHost is null)
       {
         return false;
       }
@@ -53,7 +56,7 @@ namespace Domain.Ftp
 
     public async Task<bool> StopAsync()
     {
-      if (_config?.IsActive == false || _serverHost is null)
+      if (appConfig.FtpConfig?.IsActive == false || _serverHost is null)
       {
         return true;
       }
