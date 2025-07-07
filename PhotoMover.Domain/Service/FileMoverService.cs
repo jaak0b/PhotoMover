@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Globalization;
+using CommonServiceLocator;
 using Domain.Model;
 using MetadataExtractor;
 using Microsoft.EntityFrameworkCore;
@@ -8,16 +10,16 @@ using Directory = MetadataExtractor.Directory;
 
 namespace Domain.Service
 {
-  public interface ITaskService
+  public interface IFileMoverService
   {
     public void LoadFiles(string sourceFolder, TaskType type);
 
-    public void ProcessTasks();
+    public void ProcessFiles();
 
-    public void FinalizeTask();
+    public void MoveFiles();
   }
 
-  public class TaskService(Database db, IAppConfig appConfig) : ITaskService
+  public class FileMoverService(Database db, IAppConfig appConfig) : IFileMoverService
   {
     private const string ExifDateFormat = "yyyy:MM:dd HH:mm:ss";
 
@@ -64,7 +66,7 @@ namespace Domain.Service
       }
     }
 
-    public void ProcessTasks()
+    public void ProcessFiles()
     {
       List<TaskModel> tasks = db.Tasks
                                 .Where(taskModel => taskModel.State == State.Created)
@@ -73,7 +75,6 @@ namespace Domain.Service
       {
         try
         {
-          db.Database.BeginTransaction();
           IReadOnlyList<Directory> metadata = ImageMetadataReader.ReadMetadata(task.SourceFile);
           ImmutableSortedSet<int> tags =
             appConfig.FolderPattern?.Split("/")?.Select(int.Parse)?.ToImmutableSortedSet() ?? [];
@@ -113,12 +114,10 @@ namespace Domain.Service
           Log.Information(
                           "{0} processed successfully. Destination: {1}", Path.GetFileName(task.SourceFile),
                           task.DestinationFile);
-          db.Database.CommitTransaction();
         }
         catch (Exception e)
         {
           Log.Error(e, $"Failed to process task {task}");
-          db.Database.RollbackTransaction();
 
           task.State = State.Error;
           db.Update(task);
@@ -126,16 +125,35 @@ namespace Domain.Service
       }
     }
 
-    public void FinalizeTask()
+    public void MoveFiles()
     {
-      List<TaskModel> tasks = db.Tasks
-                                .Where(taskModel => taskModel.State == State.Processed)
-                                .ToList();
-      foreach (TaskModel task in tasks)
+      ConcurrentQueue<TaskModel> queue = new(
+                                             db.Tasks
+                                               .Where(taskModel => taskModel.State == State.Processed)
+                                               .ToList());
+
+      List<Thread> tasks = Enumerable.Repeat(0, Math.Abs(Environment.ProcessorCount / 2))
+                                     .Select(_ => new Thread(() => FinalizeTaskInternal(queue)))
+                                     .ToList();
+
+      foreach (Thread task in tasks)
+      {
+        task.Start();
+      }
+
+      foreach (Thread task in tasks)
+      {
+        task.Join();
+      }
+    }
+
+    private void FinalizeTaskInternal(ConcurrentQueue<TaskModel> queue)
+    {
+      Database? localDb = ServiceLocator.Current.GetInstance<Database>();
+      while (queue.TryDequeue(out TaskModel task))
       {
         try
         {
-          db.Database.BeginTransaction();
           string folder = Path.GetDirectoryName(task.DestinationFile!) ?? throw new ApplicationException();
           if (!System.IO.Directory.Exists(folder))
           {
@@ -152,19 +170,17 @@ namespace Domain.Service
             task.State = State.Skipped;
           }
 
-          db.Update(task);
+          localDb.Update(task);
           Log.Information(
                           "{0} moved from '{1}' to '{2}'", Path.GetFileName(task.SourceFile),
                           task.SourceFile, task.DestinationFile);
-          db.Database.CommitTransaction();
         }
         catch (Exception e)
         {
           Log.Error(e, $"Failed to finalize task {task}");
-          db.Database.RollbackTransaction();
 
           task.State = State.Error;
-          db.Update(task);
+          localDb.Update(task);
         }
       }
     }

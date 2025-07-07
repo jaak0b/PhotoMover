@@ -10,7 +10,7 @@ namespace Domain
     protected override void Load(ContainerBuilder builder)
     {
       base.Load(builder);
-      builder.RegisterType<TaskService>().As<ITaskService>().SingleInstance();
+      builder.RegisterType<FileMoverService>().As<IFileMoverService>().SingleInstance();
     }
   }
 }

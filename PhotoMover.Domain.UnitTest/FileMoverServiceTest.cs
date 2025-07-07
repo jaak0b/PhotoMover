@@ -6,9 +6,9 @@ using Directory = System.IO.Directory;
 
 namespace Domain.UnitTest
 {
-  public class TaskServiceTest : PhotoMoverBaseTest
+  public class FileMoverServiceTest : PhotoMoverBaseTest
   {
-    private static ITaskService Service => ServiceLocator.Current.GetInstance<ITaskService>();
+    private static IFileMoverService Service => ServiceLocator.Current.GetInstance<IFileMoverService>();
 
     #region LoadFiles
 
@@ -47,7 +47,8 @@ namespace Domain.UnitTest
     public void LoadFiles_ConfigurationDestinationFolderHasNoneExistingPath_DoesNotThrowAnException()
     {
       AppConfig.FolderTarget = Path.Combine(Path.GetTempPath(), "99999999999999999999999999999999999999");
-      Assert.That(Directory.Exists(AppConfig.FolderSource), Is.False);
+      Thread.Sleep(TimeSpan.FromSeconds(2));
+      Assert.That(Directory.Exists(AppConfig.FolderTarget), Is.False);
       Assert.DoesNotThrow(() => Service.LoadFiles(AppConfig.FolderSource, TaskType.CreatedByUser));
       Assert.That(Database.Tasks.Count(), Is.EqualTo(0));
     }
@@ -73,7 +74,7 @@ namespace Domain.UnitTest
       AppConfig.FolderPattern = $"{folderPattern}";
       AppConfig.FilePattern = "*Sony ILCE-7M3 (A7M3).arw";
       Service.LoadFiles(AppConfig.FolderSource, TaskType.CreatedByUser);
-      Service.ProcessTasks();
+      Service.ProcessFiles();
       TaskModel task = Database.Tasks.Single();
       Assert.Multiple(
                       () =>
@@ -93,7 +94,7 @@ namespace Domain.UnitTest
       AppConfig.FolderPattern = $"{ExifDirectoryBase.TagModel}/{ExifDirectoryBase.TagDateTime}";
       AppConfig.FilePattern = "*Sony ILCE-7M3 (A7M3).arw";
       Service.LoadFiles(AppConfig.FolderSource, TaskType.CreatedByUser);
-      Service.ProcessTasks();
+      Service.ProcessFiles();
       TaskModel task = Database.Tasks.Single();
       Assert.Multiple(
                       () =>
@@ -118,8 +119,8 @@ namespace Domain.UnitTest
       AppConfig.FolderPattern = $"{folderPattern}";
       AppConfig.FilePattern = "*Sony ILCE-7M3 (A7M3).arw";
       Service.LoadFiles(AppConfig.FolderSource, TaskType.CreatedByUser);
-      Service.ProcessTasks();
-      Service.FinalizeTask();
+      Service.ProcessFiles();
+      Service.MoveFiles();
       TaskModel task = Database.Tasks.Single();
       Assert.Multiple(
                       () =>

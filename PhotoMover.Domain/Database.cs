@@ -16,7 +16,7 @@ namespace Domain
 
     public virtual DbSet<TaskModel> Tasks => Set<TaskModel>();
 
-    public event EventHandler CollectionChanged;
+    public static event EventHandler CollectionChanged;
 
     override public EntityEntry<TEntity> Add<TEntity>(TEntity obj) where TEntity : class
     {

@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Domain.Ftp
 {
-  public class FtpProvider(IAppConfig appConfig, ITaskService taskService) : IDisposable
+  public class FtpProvider(IAppConfig appConfig, IFileMoverService fileMoverService) : IDisposable
   {
     private ServiceProvider? _collection;
     private IFtpServerHost? _serverHost;

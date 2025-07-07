@@ -31,11 +31,12 @@ namespace Domain.UnitTest
                        _ =>
                        {
                          DbContextOptionsBuilder<Database> optionsBuilder = new();
-                         optionsBuilder.UseInMemoryDatabase(Constants.AppName + "Database");
+                         optionsBuilder.UseSqlite($"Data Source={Path.Combine(Domain.BaseFolder.FullName, "db.sql")}");
                          return new Database(optionsBuilder.Options);
                        })
              .As<Database>()
-             .InstancePerLifetimeScope();
+             .AsImplementedInterfaces()
+             .InstancePerDependency();
     }
   }
 }

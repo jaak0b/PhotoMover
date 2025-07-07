@@ -28,7 +28,8 @@ namespace PhotoMover
 
         {
           Database db = ServiceProvider.GetRequiredService<Database>();
-          db.Database.Migrate();
+          db.Database.EnsureDeleted();
+          db.Database.EnsureCreated();
         }
         // var x=  new PresetModel() { Name = "Test", SourceFolder = "F:\\DCIM", DestinationFolder = "C:\\Users\\jakob\\Downloads\\New folder", FolderPattern = "306"};
         //

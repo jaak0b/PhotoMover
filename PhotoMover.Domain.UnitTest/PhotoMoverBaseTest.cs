@@ -25,6 +25,7 @@ namespace Domain.UnitTest
 
       ServiceProvider = PhotoMoverServiceProvider.CreateServiceProvider<PhotoMoverServiceProvider>();
       Database = ServiceProvider.GetRequiredService<Database>();
+      Database.Database.EnsureDeleted();
       Database.Database.EnsureCreated();
       CreateTestConfiguration();
       CopyTestData();

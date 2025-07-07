@@ -39,8 +39,5 @@
         <Label Grid.Row="3" Grid.Column="0" Content="Group Files Pattern:" Margin="5" Padding="5" ToolTip="Allows for grouping files that are moved to the target folder. Check Github for examples and more details." />
         <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Margin="5" Padding="5"
                  Text="{Binding ElementName=SettingsUc, Path=AppConfig.FolderPattern, Mode=TwoWay}" />
-        
-        
-
     </Grid>
 </UserControl>
