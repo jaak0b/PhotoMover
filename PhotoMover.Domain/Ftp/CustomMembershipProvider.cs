@@ -2,16 +2,13 @@ using FubarDev.FtpServer.AccountManagement;
 
 namespace Domain.Ftp
 {
-  public class PhotoMoverMembershipProvider(IAppConfig appConfig) : IMembershipProvider
+  public class PhotoMoverMembershipProvider(ISettingsProvider provider) : IMembershipProvider
   {
     public Task<MemberValidationResult> ValidateUserAsync(string username, string password)
     {
-      if (username == appConfig.FtpConfig.Credentials?.UserName &&
-          password == appConfig.FtpConfig.Credentials?.Password)
+      if (username == provider.Settings.Value.Credentials?.UserName && password == provider.Settings.Value.Credentials?.Password)
       {
-        return Task.FromResult(
-                               new MemberValidationResult(
-                                                          MemberValidationStatus.AuthenticatedUser,
+        return Task.FromResult(new MemberValidationResult(MemberValidationStatus.AuthenticatedUser,
                                                           new User(username)));
       }
 

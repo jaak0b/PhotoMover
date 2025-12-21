@@ -11,6 +11,7 @@ namespace Domain
     {
       base.Load(builder);
       builder.RegisterType<FileMoverService>().As<IFileMoverService>().SingleInstance();
+      builder.RegisterType<SettingsProvider>().As<ISettingsProvider>().SingleInstance();
     }
   }
 }

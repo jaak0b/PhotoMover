@@ -80,7 +80,7 @@ namespace Domain.UnitTest
                       () =>
                       {
                         Assert.That(
-                                    task.DestinationFile,
+                                    task.DestinationFilePath,
                                     Is.EqualTo(
                                                $"{Path.Combine(Domain.TargetFolder.FullName, folderPath, "Sony ILCE-7M3 (A7M3).arw")}"));
                         Assert.That(task.State, Is.EqualTo(State.Processed));
@@ -100,7 +100,7 @@ namespace Domain.UnitTest
                       () =>
                       {
                         Assert.That(
-                                    task.DestinationFile,
+                                    task.DestinationFilePath,
                                     Is.EqualTo(
                                                $"{Path.Combine(Domain.TargetFolder.FullName, Path.Combine("ILCE-7M3", "2019 04 24"), "Sony ILCE-7M3 (A7M3).arw")}"));
                         Assert.That(task.State, Is.EqualTo(State.Processed));
@@ -125,8 +125,8 @@ namespace Domain.UnitTest
       Assert.Multiple(
                       () =>
                       {
-                        Assert.That(File.Exists(task.DestinationFile));
-                        Assert.That(File.Exists(task.SourceFile));
+                        Assert.That(File.Exists(task.DestinationFilePath));
+                        Assert.That(File.Exists(task.SourceFilePath));
                         Assert.That(task.State, Is.EqualTo(State.Moved));
                       });
     }

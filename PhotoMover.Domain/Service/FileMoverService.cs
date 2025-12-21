@@ -1,10 +1,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Globalization;
-using CommonServiceLocator;
 using Domain.Model;
 using MetadataExtractor;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Directory = MetadataExtractor.Directory;
 
@@ -12,52 +10,39 @@ namespace Domain.Service
 {
   public interface IFileMoverService
   {
-    public void LoadFiles(string sourceFolder, TaskType type);
+    public IEnumerable<TaskModel> LoadFiles();
 
-    public void ProcessFiles();
+    public void ProcessFiles(IEnumerable<TaskModel> taskModels);
 
-    public void MoveFiles();
+    public void MoveFiles(IEnumerable<TaskModel> taskModels);
   }
 
-  public class FileMoverService(Database db, IAppConfig appConfig) : IFileMoverService
+  public class FileMoverService(ISettingsProvider provider) : IFileMoverService
   {
     private const string ExifDateFormat = "yyyy:MM:dd HH:mm:ss";
 
-    public void LoadFiles(string sourceFolder, TaskType type)
+    public IEnumerable<TaskModel> LoadFiles()
     {
       try
       {
-        if (!System.IO.Directory.Exists(appConfig.FolderTarget))
+        if (!System.IO.Directory.Exists(provider.Settings.Value.DestinationFolder))
         {
-          Log.Error(
-                    "Destination Folder {0} does not exist. Files will not be loaded!",
-                    appConfig.FolderTarget);
-          return;
+          Log.Error("Destination Folder {0} does not exist. Files will not be loaded!",
+                    provider.Settings.Value.DestinationFolder);
+          return new List<TaskModel>();
         }
 
-        if (!System.IO.Directory.Exists(sourceFolder))
-        {
-          return;
-        }
-
-        string filePattern = appConfig.FilePattern.Trim();
+        string filePattern = provider.Settings.Value.FilePattern.Trim();
         if (!filePattern.StartsWith("*"))
         {
           filePattern = "*" + filePattern;
         }
 
-
-        List<TaskModel> files = new DirectoryInfo(sourceFolder)
+        List<TaskModel> files = new DirectoryInfo(provider.Settings.Value.SourceFolder)
                                .GetFiles(filePattern, SearchOption.AllDirectories)
-                               .Select(
-                                       fileInfo => new TaskModel()
-                                                   {
-                                                     State = State.Created,
-                                                     SourceFile = fileInfo.FullName,
-                                                     Type = type
-                                                   }).ToList();
-        db.AddRange(files);
-        Log.Information("Loaded {0} files.", files.Count);
+                               .Select(fileInfo => new TaskModel() { SourceFilePath = fileInfo.FullName, })
+                               .ToList();
+        return files;
       }
       catch (Exception e)
       {
@@ -66,25 +51,21 @@ namespace Domain.Service
       }
     }
 
-    public void ProcessFiles()
+    public void ProcessFiles(IEnumerable<TaskModel> taskModels)
     {
-      List<TaskModel> tasks = db.Tasks
-                                .Where(taskModel => taskModel.State == State.Created)
-                                .ToList();
-      foreach (TaskModel task in tasks)
+      foreach (TaskModel task in taskModels.Where(taskModel => taskModel.ErrorMessage is null))
       {
         try
         {
-          IReadOnlyList<Directory> metadata = ImageMetadataReader.ReadMetadata(task.SourceFile);
-          ImmutableSortedSet<int> tags =
-            appConfig.FolderPattern?.Split("/")?.Select(int.Parse)?.ToImmutableSortedSet() ?? [];
+          IReadOnlyList<Directory> metadata = ImageMetadataReader.ReadMetadata(task.SourceFilePath);
+          ImmutableSortedSet<int> tags = provider.Settings.Value.Groups.Select(groupOptions => (int)groupOptions)?.ToImmutableSortedSet() ?? [];
 
-          string destinationFolder = appConfig.FolderTarget;
+          string destinationFolder = provider.Settings.Value.DestinationFolder;
           foreach (int tagType in tags)
           {
-            string value = metadata.Where(e => e.HasTagName(tagType))
-                                   .Select(e => e.GetString(tagType))
-                                   .Where(e => e != null)
+            string value = metadata.Where(directory => directory.HasTagName(tagType))
+                                   .Select(directory => directory.GetString(tagType))
+                                   .Where(s => s != null)
                                    .Cast<string>()
                                    .Distinct()
                                    .Single();
@@ -93,8 +74,7 @@ namespace Domain.Service
               continue;
             }
 
-            if (DateTime.TryParseExact(
-                                       value,
+            if (DateTime.TryParseExact(value,
                                        ExifDateFormat,
                                        CultureInfo.InvariantCulture,
                                        DateTimeStyles.None,
@@ -108,29 +88,22 @@ namespace Domain.Service
             }
           }
 
-          task.DestinationFile = Path.Combine(destinationFolder, Path.GetFileName(task.SourceFile));
-          task.State = State.Processed;
-          db.Update(task);
-          Log.Information(
-                          "{0} processed successfully. Destination: {1}", Path.GetFileName(task.SourceFile),
-                          task.DestinationFile);
+          task.DestinationFilePath = Path.Combine(destinationFolder, Path.GetFileName(task.SourceFilePath));
+          Log.Information("{0} processed successfully. Destination: {1}",
+                          Path.GetFileName(task.SourceFilePath),
+                          task.DestinationFilePath);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-          Log.Error(e, $"Failed to process task {task}");
-
-          task.State = State.Error;
-          db.Update(task);
+          Log.Error(exception, $"Failed to process task {task}");
+          task.ErrorMessage = exception.Message;
         }
       }
     }
 
-    public void MoveFiles()
+    public void MoveFiles(IEnumerable<TaskModel> taskModels)
     {
-      ConcurrentQueue<TaskModel> queue = new(
-                                             db.Tasks
-                                               .Where(taskModel => taskModel.State == State.Processed)
-                                               .ToList());
+      ConcurrentQueue<TaskModel> queue = new(taskModels.ToList());
 
       List<Thread> tasks = Enumerable.Repeat(0, Math.Abs(Environment.ProcessorCount / 2))
                                      .Select(_ => new Thread(() => FinalizeTaskInternal(queue)))
@@ -149,38 +122,35 @@ namespace Domain.Service
 
     private void FinalizeTaskInternal(ConcurrentQueue<TaskModel> queue)
     {
-      Database? localDb = ServiceLocator.Current.GetInstance<Database>();
       while (queue.TryDequeue(out TaskModel task))
       {
         try
         {
-          string folder = Path.GetDirectoryName(task.DestinationFile!) ?? throw new ApplicationException();
+          string folder = Path.GetDirectoryName(task.DestinationFilePath!) ?? throw new ApplicationException();
           if (!System.IO.Directory.Exists(folder))
           {
             System.IO.Directory.CreateDirectory(folder);
           }
 
-          if (!File.Exists(task.DestinationFile))
+          if (!File.Exists(task.DestinationFilePath))
           {
-            File.Copy(task.SourceFile, task.DestinationFile!);
-            task.State = State.Moved;
+            File.Copy(task.SourceFilePath, task.DestinationFilePath!);
+            task.FileAlreadyExists = false;
           }
           else
           {
-            task.State = State.Skipped;
+            task.FileAlreadyExists = true;
           }
 
-          localDb.Update(task);
-          Log.Information(
-                          "{0} moved from '{1}' to '{2}'", Path.GetFileName(task.SourceFile),
-                          task.SourceFile, task.DestinationFile);
+          Log.Information("{0} moved from '{1}' to '{2}'",
+                          Path.GetFileName(task.SourceFilePath),
+                          task.SourceFilePath,
+                          task.DestinationFilePath);
         }
         catch (Exception e)
         {
           Log.Error(e, $"Failed to finalize task {task}");
-
-          task.State = State.Error;
-          localDb.Update(task);
+          task.ErrorMessage += e.Message;
         }
       }
     }

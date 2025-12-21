@@ -5,34 +5,40 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Domain.Ftp
 {
-  public class FtpProvider(IAppConfig appConfig, IFileMoverService fileMoverService) : IDisposable
+  public class FtpProvider(ISettingsProvider provider, IFileMoverService fileMoverService) : IDisposable
   {
     private ServiceProvider? _collection;
     private IFtpServerHost? _serverHost;
-    private FileSystemWatcher _fileSystemWatcher = new FileSystemWatcher();
+    private readonly FileSystemWatcher _fileSystemWatcher = new();
+
+    public string FtpFolder => Path.Combine(provider.SettingsFolder, "FTP");
+
+    private void EnsureFptSourceCreated()
+    {
+      if (!Directory.Exists(Path.Combine(provider.SettingsFolder, "FTP")))
+        Directory.CreateDirectory(FtpFolder);
+    }
 
     public bool Build()
     {
-      if (!appConfig.FtpConfig.IsActive)
+      if (!provider.Settings.Value.FtpIsActive)
       {
         return false;
       }
 
-      if (!Directory.Exists(appConfig.FtpConfig.FolderSource))
-        return false;
+      EnsureFptSourceCreated();
 
-      _fileSystemWatcher.Path = appConfig.FtpConfig.FolderSource;
+      _fileSystemWatcher.Path = FtpFolder;
       _fileSystemWatcher.Created += FileSystemWatcher_OnCreated;
       _fileSystemWatcher.EnableRaisingEvents = true;
 
       ServiceCollection services = new();
 
-      services.Configure<DotNetFileSystemOptions>(options => options.RootPath = appConfig.FtpConfig.FolderSource);
-      services.AddFtpServer(
-                            builder => builder
+      services.Configure<DotNetFileSystemOptions>(options => options.RootPath = FtpFolder);
+      services.AddFtpServer(builder => builder
                                       .UseDotNetFileSystem()
                                       .EnableAnonymousAuthentication());
-      services.Configure<FtpServerOptions>(opt => opt.ServerAddress = appConfig.FtpConfig.FtpServerIpAddress);
+      services.Configure<FtpServerOptions>(opt => opt.ServerAddress = provider.Settings.Value.FtpServerIpAddress);
 
       _collection = services.BuildServiceProvider();
       _serverHost = _collection.GetRequiredService<IFtpServerHost>();
@@ -45,7 +51,7 @@ namespace Domain.Ftp
 
     public async Task<bool> StartAsync()
     {
-      if (appConfig.FtpConfig?.IsActive == false || _serverHost is null)
+      if (!provider.Settings.Value.FtpIsActive || _serverHost is null)
       {
         return false;
       }
@@ -56,7 +62,7 @@ namespace Domain.Ftp
 
     public async Task<bool> StopAsync()
     {
-      if (appConfig.FtpConfig?.IsActive == false || _serverHost is null)
+      if (!provider.Settings.Value.FtpIsActive || _serverHost is null)
       {
         return true;
       }
