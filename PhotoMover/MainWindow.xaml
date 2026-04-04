@@ -1,0 +1,379 @@
+﻿<Window x:Class="PhotoMover.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PhotoMover"
+        xmlns:conv="clr-namespace:PhotoMover.Converters"
+        mc:Ignorable="d"
+        Title="PhotoMover"
+        Height="650"
+        Width="1000"
+        Background="#F5F5F5"
+        WindowStartupLocation="CenterScreen"
+        Foreground="#333333">
+                    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <conv:InverseBooleanToVisibilityConverter x:Key="BooleanToVisibilityInverseConverter" />
+        <conv:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <conv:BooleanToStringConverter x:Key="BooleanConverter" />
+        <conv:BooleanToThicknessConverter x:Key="BooleanToThicknessConverter" />
+        <conv:BooleanToBrushConverter x:Key="BooleanToBrushConverter" />
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Background="#2C3E50" Margin="0">
+            <TextBlock
+                Text="PhotoMover"
+                Foreground="White"
+                FontSize="24"
+                FontWeight="Bold"
+                VerticalAlignment="Center"
+                Margin="20,0,0,0" />
+        </Grid>
+
+            <TabControl Grid.Row="1" Margin="10" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
+            <TabItem Header="Dashboard" Padding="15,10">
+                <Grid Background="White" Margin="10">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock
+                            Text="Welcome to PhotoMover"
+                            FontSize="28"
+                            FontWeight="Bold"
+                            Foreground="#2C3E50"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,20" />
+                        <TextBlock
+                            Text="Organize your photos with ease using custom grouping rules"
+                            FontSize="14"
+                            Foreground="#666"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,40" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button
+                                Content="FTP Server"
+                                Padding="20,12"
+                                FontSize="12"
+                                Background="#3498DB"
+                                Foreground="White"
+                                Cursor="Hand"
+                                Margin="0,0,10,0"
+                                Command="{Binding NavigateToFtpCommand}" />
+                            <Button
+                                Content="Import from SD Card"
+                                Padding="20,12"
+                                FontSize="12"
+                                Background="#27AE60"
+                                Foreground="White"
+                                Cursor="Hand"
+                                Margin="0,0,10,0"
+                                Command="{Binding NavigateToSdImportCommand}" />
+                            <Button
+                                Content="Configure Rules"
+                                Padding="20,12"
+                                FontSize="12"
+                                Background="#E74C3C"
+                                Foreground="White"
+                                Cursor="Hand"
+                                Command="{Binding NavigateToRulesCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="FTP Server" Padding="15,10">
+                <Grid Background="White" Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="1*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Embedded FTP Server" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,8" />
+                        <Separator Grid.Row="1" Margin="0,0,0,12" />
+
+                        <Grid Grid.Row="2" Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="220" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Orientation="Vertical">
+                                <TextBlock Text="Port:" FontWeight="Bold" Foreground="#333" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding FtpServerViewModel.Port, UpdateSourceTrigger=PropertyChanged}" Width="72" Height="26" Padding="4" FontSize="12" HorizontalAlignment="Left" />
+
+                                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                    <Button Content="Start" Width="92" Height="30" FontSize="12" Background="#27AE60" Foreground="White" Cursor="Hand" Margin="0,0,8,0"
+                                            Command="{Binding FtpServerViewModel.StartServerCommand}" />
+                                    <Button Content="Stop" Width="92" Height="30" FontSize="12" Background="#E74C3C" Foreground="White" Cursor="Hand"
+                                            Command="{Binding FtpServerViewModel.StopServerCommand}" />
+                                </StackPanel>
+
+                                <TextBlock Text="{Binding FtpServerViewModel.Status, Mode=OneWay}" Foreground="#7F8C8D" FontSize="11" Margin="0,8,0,0" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Vertical">
+                                <TextBlock Text="Upload Directory:" FontWeight="Bold" Foreground="#333" Margin="0,0,0,4" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding FtpServerViewModel.UploadDirectory}" Padding="6" Height="28" FontSize="12" VerticalContentAlignment="Center" />
+                                    <Button Grid.Column="1" Content="Browse..." Width="84" Height="28" FontSize="12" Background="#3498DB" Foreground="White" Cursor="Hand" Margin="8,0,0,0" VerticalAlignment="Center"
+                                            Command="{Binding FtpServerViewModel.BrowseFtpDirectoryCommand}"
+                                            IsEnabled="{Binding FtpServerViewModel.IsRunning, Converter={StaticResource InverseBooleanConverter}}" />
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,16,0,0">
+                            <TextBlock Text="Uploaded Files" FontSize="14" FontWeight="Bold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                            <Button Content="Clear List" Padding="8,4" FontSize="11" Background="#95A5A6" Foreground="White" Cursor="Hand" Margin="12,0,0,0"
+                                    Command="{Binding FtpServerViewModel.ClearFilesCommand}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Files List -->
+                    <DataGrid Grid.Row="1" Margin="20,0,20,20" 
+                             ItemsSource="{Binding FtpServerViewModel.UploadedFiles}"
+                             Background="#FAFAFA"
+                             BorderBrush="#E0E0E0"
+                             BorderThickness="1"
+                             AutoGenerateColumns="False"
+                             CanUserAddRows="False"
+                             CanUserDeleteRows="False"
+                             CanUserResizeRows="False"
+                             GridLinesVisibility="Horizontal"
+                             HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="File Name" Binding="{Binding FileName}" Width="1*" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Size" Binding="{Binding FileSizeDisplay}" Width="100" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Uploaded At" Binding="{Binding UploadedAt, StringFormat=g}" Width="150" IsReadOnly="True" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- SD Card Import Tab -->
+            <TabItem Header="SD Card Import" Padding="15,10">
+                <Grid Background="White" Margin="10">
+                    <StackPanel Margin="20">
+                        <TextBlock Text="Import from SD/microSD Card" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,10" />
+                        <Separator Margin="0,0,0,15" />
+
+                        <Button Content="Detect Cards" Padding="15,10" FontSize="12" Background="#3498DB" Foreground="White" Cursor="Hand" Margin="0,0,0,10"
+                                Command="{Binding SdImportViewModel.DetectCardsCommand}" 
+                                IsEnabled="{Binding SdImportViewModel.IsImporting, Converter={StaticResource InverseBooleanConverter}}" />
+
+                        <TextBlock Text="Available Cards:" FontWeight="Bold" Foreground="#333" Margin="0,10,0,5" />
+                        <ListBox Height="100" Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1" Margin="0,0,0,10"
+                                 ItemsSource="{Binding SdImportViewModel.DetectedCards}"
+                                 SelectedItem="{Binding SdImportViewModel.SelectedCard}"
+                                 IsEnabled="{Binding SdImportViewModel.IsImporting, Converter={StaticResource InverseBooleanConverter}}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <TextBlock Text="Destination Folder:" FontWeight="Bold" Foreground="#333" Margin="0,10,0,5" />
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding SdImportViewModel.DestinationPath}" Padding="8" Height="35" FontSize="12" VerticalContentAlignment="Center"
+                                     IsEnabled="{Binding SdImportViewModel.IsImporting, Converter={StaticResource InverseBooleanConverter}}" />
+                            <Button Grid.Column="1" Content="Browse..." Padding="15,8" Height="35" FontSize="12" Background="#3498DB" Foreground="White" Cursor="Hand" Margin="8,0,0,0" VerticalAlignment="Center"
+                                    Command="{Binding SdImportViewModel.BrowseFolderCommand}"
+                                    IsEnabled="{Binding SdImportViewModel.IsImporting, Converter={StaticResource InverseBooleanConverter}}" />
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <Button Content="Import" Padding="15,10" FontSize="12" Background="#27AE60" Foreground="White" Cursor="Hand" Margin="0,0,10,0"
+                                    Command="{Binding SdImportViewModel.ImportCommand}"
+                                    Visibility="{Binding SdImportViewModel.IsImporting, Converter={StaticResource BooleanToVisibilityInverseConverter}}" />
+                            <Button Content="Cancel" Padding="15,10" FontSize="12" Background="#E74C3C" Foreground="White" Cursor="Hand"
+                                    Command="{Binding SdImportViewModel.CancelImportCommand}"
+                                    Visibility="{Binding SdImportViewModel.IsImporting, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        </StackPanel>
+
+                        <!-- Progress Section (Only visible during import) -->
+                        <StackPanel Visibility="{Binding SdImportViewModel.IsImporting, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,10,0,10">
+                            <!-- File Count -->
+                            <TextBlock Foreground="#333" FontSize="11" Margin="0,0,0,5">
+                                <Run Text="Files: "/>
+                                <Run Text="{Binding SdImportViewModel.FilesProcessed, Mode=OneWay}" />
+                                <Run Text="/"/>
+                                <Run Text="{Binding SdImportViewModel.TotalFiles, Mode=OneWay}" />
+                            </TextBlock>
+
+                            <!-- Progress Bar -->
+                            <ProgressBar Height="20" Background="#E0E0E0" Foreground="#27AE60" 
+                                        Value="{Binding SdImportViewModel.Progress, Mode=OneWay}" Margin="0,0,0,5" />
+
+                            <!-- Progress Percentage and Time Remaining -->
+                            <Grid Margin="0,0,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" 
+                                          Foreground="#7F8C8D" FontSize="11">
+                                    <Run Text="{Binding SdImportViewModel.Progress, StringFormat=F1, Mode=OneWay}" />
+                                    <Run Text="% Complete" />
+                                </TextBlock>
+                                <TextBlock Grid.Column="1" 
+                                          Text="{Binding SdImportViewModel.EstimatedTimeRemaining, Mode=OneWay}" 
+                                          Foreground="#7F8C8D" FontSize="11" TextAlignment="Right" />
+                            </Grid>
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding SdImportViewModel.Status, Mode=OneWay}" Foreground="#7F8C8D" FontSize="11" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- Rule Editor Tab -->
+            <TabItem Header="Grouping Rules" Padding="15,10">
+                <Grid Background="White" Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="280" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Rules List Panel -->
+                    <StackPanel Grid.Column="0" Margin="0,0,15,0">
+                        <TextBlock Text="Existing Rules" FontSize="14" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,10" />
+
+                        <!-- New Rule Button -->
+                        <Button Content="+ New Rule" Padding="10,8" FontSize="11" Background="#27AE60" Foreground="White" Cursor="Hand" 
+                                Margin="0,0,0,10" Command="{Binding RuleEditorViewModel.AddNewRuleCommand}" />
+
+                        <!-- Rules List -->
+                        <ListBox ItemsSource="{Binding RuleEditorViewModel.Rules}" 
+                                SelectedItem="{Binding RuleEditorViewModel.SelectedRule, Mode=TwoWay}"
+                                Background="#F5F5F5" 
+                                BorderBrush="#DDD" 
+                                BorderThickness="1"
+                                Margin="0,0,0,10">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0,2" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <Border
+                                                    Name="Bd"
+                                                    BorderBrush="#27AE60"
+                                                    CornerRadius="4"
+                                                    Padding="8,6"
+                                                    Background="Transparent">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="BorderThickness" Value="0" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Path=Content.IsActive, RelativeSource={RelativeSource TemplatedParent}}" Value="True">
+                                                                    <Setter Property="BorderThickness" Value="2" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <ContentPresenter />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="#E8F4F8" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="#333" />
+                                            <TextBlock Text=" [Active]" FontWeight="Bold" Foreground="#27AE60" 
+                                                      Visibility="{Binding IsActive, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding PathPattern}" FontSize="9" Foreground="#7F8C8D" TextTrimming="CharacterEllipsis" Margin="0,4,0,0" />
+
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <!-- Action Buttons -->
+                        <Button Content="Delete" Padding="10,8" FontSize="11" Background="#E74C3C" Foreground="White" Cursor="Hand" 
+                                Margin="0,0,0,5" Command="{Binding RuleEditorViewModel.DeleteRuleCommand}" Width="100" HorizontalAlignment="Left" />
+                        <Button Content="Set Active" Padding="10,8" FontSize="11" Background="#F39C12" Foreground="White" Cursor="Hand" 
+                                Command="{Binding RuleEditorViewModel.SetActiveRuleCommand}" Width="100" HorizontalAlignment="Left" />
+                    </StackPanel>
+
+                    <!-- Edit Form Panel -->
+                    <StackPanel Grid.Column="1" Margin="0">
+                        <TextBlock Text="{Binding RuleEditorViewModel.IsEditMode, StringFormat='Edit Rule', ConverterParameter='Edit Rule|New Rule', Converter={StaticResource BooleanConverter}}" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,10" />
+                        <Separator Margin="0,0,0,15" />
+
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock Text="Rule Name:" FontWeight="Bold" Foreground="#333" Margin="0,0,0,5" />
+                            <TextBox Text="{Binding RuleEditorViewModel.RuleName, UpdateSourceTrigger=PropertyChanged}" Padding="8" Height="35" FontSize="12" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock Text="Available Placeholders:" FontWeight="Bold" Foreground="#333" Margin="0,0,0,5" />
+                            <ScrollViewer MaxHeight="80" VerticalScrollBarVisibility="Auto" Background="#F5F5F5" Padding="8" Margin="0,5,0,10">
+                                <ItemsControl ItemsSource="{Binding RuleEditorViewModel.AvailablePlaceholders}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Content="{Binding}" Padding="8,4" Margin="4" FontSize="10" 
+                                                    Background="#E0E0E0" Foreground="#333" Click="InsertPlaceholder_Click" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock Text="Path Pattern:" FontWeight="Bold" Foreground="#333" Margin="0,0,0,5" />
+                            <TextBox Name="PathPatternTextBox" Text="{Binding RuleEditorViewModel.PathPattern, UpdateSourceTrigger=PropertyChanged}" Padding="8" Height="60" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Top" AcceptsReturn="True" />
+                            <TextBlock Text="Example: {CameraModel}/{DateTaken:yyyy}/{DateTaken:MM}" FontSize="10" Foreground="#7F8C8D" Margin="0,5,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock Text="Preview:" FontWeight="Bold" Foreground="#333" Margin="0,0,0,5" />
+                            <TextBlock Text="{Binding RuleEditorViewModel.PreviewPath, Mode=OneWay}" Padding="8" Background="#F5F5F5" Foreground="#333" MinHeight="25" VerticalAlignment="Top" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <Button Content="{Binding RuleEditorViewModel.IsEditMode, StringFormat='Update Rule', ConverterParameter='Update Rule|Save Rule', Converter={StaticResource BooleanConverter}}" 
+                                Padding="15,10" FontSize="12" Background="#27AE60" Foreground="White" Cursor="Hand" 
+                                Command="{Binding RuleEditorViewModel.SaveRuleCommand}" Width="120" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
