@@ -1,0 +1,39 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.4.11626.88 stable
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoMover.Core", "PhotoMover.Core\PhotoMover.Core.csproj", "{796FD9B0-17A1-43F9-9AB9-089F5C761335}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoMover.Infrastructure", "PhotoMover.Infrastructure\PhotoMover.Infrastructure.csproj", "{D897F381-C57E-4947-9CDB-0C50DB1CEE86}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhotoMover", "PhotoMover\PhotoMover.csproj", "{73B64326-6106-4304-857A-3AAE91225A2E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotoMover.Tests", "PhotoMover.Tests\PhotoMover.Tests.csproj", "{0A48BCBA-D77F-420A-B746-57DFC14B3690}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{796FD9B0-17A1-43F9-9AB9-089F5C761335}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{796FD9B0-17A1-43F9-9AB9-089F5C761335}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{796FD9B0-17A1-43F9-9AB9-089F5C761335}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{796FD9B0-17A1-43F9-9AB9-089F5C761335}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D897F381-C57E-4947-9CDB-0C50DB1CEE86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D897F381-C57E-4947-9CDB-0C50DB1CEE86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D897F381-C57E-4947-9CDB-0C50DB1CEE86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D897F381-C57E-4947-9CDB-0C50DB1CEE86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73B64326-6106-4304-857A-3AAE91225A2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73B64326-6106-4304-857A-3AAE91225A2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73B64326-6106-4304-857A-3AAE91225A2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73B64326-6106-4304-857A-3AAE91225A2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A48BCBA-D77F-420A-B746-57DFC14B3690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A48BCBA-D77F-420A-B746-57DFC14B3690}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A48BCBA-D77F-420A-B746-57DFC14B3690}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A48BCBA-D77F-420A-B746-57DFC14B3690}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

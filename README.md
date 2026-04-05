@@ -1,4 +1,5 @@
 # PhotoMover
+[![.NET Core Desktop](https://github.com/Jakob-Eichberger/PhotoMover/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/Jakob-Eichberger/PhotoMover/actions/workflows/dotnet-desktop.yml)
 
 PhotoMover is a simple and efficient tool to automatically move photos from a storage medium (like a camera) to a folder grouped by date (day). This helps in organizing your photos in a structured manner.
 
