@@ -114,6 +114,10 @@ public sealed class SdImportViewModel : ViewModelBase
         ImportCommand = new RelayCommandAsync(_ => ImportFromCardAsync(), _ => !IsImporting && SelectedCard is not null);
         CancelImportCommand = new RelayCommand(_ => CancelImport(), _ => IsImporting);
         BrowseFolderCommand = new RelayCommand(_ => BrowseFolder(), _ => !IsImporting);
+
+        // react to app state changes so UI can update
+        AppState.ImportingChanged += (_, _) => OnPropertyChanged(nameof(CanEditConfiguration));
+        AppState.FtpRunningChanged += (_, _) => OnPropertyChanged(nameof(CanEditConfiguration));
     }
 
     public async Task DetectCardsAsync()
@@ -164,7 +168,14 @@ public sealed class SdImportViewModel : ViewModelBase
             return;
         }
 
+        if (!CanEditConfiguration)
+        {
+            Status = "Cannot start import while FTP server is running or another import is active";
+            return;
+        }
+
         IsImporting = true;
+        AppState.IsImporting = true;
         Results.Clear();
         Progress = 0;
         FilesProcessed = 0;
@@ -225,10 +236,13 @@ public sealed class SdImportViewModel : ViewModelBase
         finally
         {
             IsImporting = false;
+            AppState.IsImporting = false;
             _importCancellationTokenSource?.Dispose();
             _importCancellationTokenSource = null;
         }
     }
+
+    public bool CanEditConfiguration => !AppState.IsImporting && !AppState.IsFtpRunning;
 
     /// <summary>
     /// Cancels the ongoing import operation.

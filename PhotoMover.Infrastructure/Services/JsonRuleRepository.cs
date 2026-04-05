@@ -105,7 +105,15 @@ public sealed class JsonRuleRepository : IRuleRepository
                 return null;
 
             var activeId = File.ReadAllText(activeFilePath).Trim();
-            return DeserializeRule(Path.Combine(_storagePath, $"{activeId}.json"));
+            var rule = DeserializeRule(Path.Combine(_storagePath, $"{activeId}.json"));
+
+            // Clean up stale pointer so future calls don't keep hitting a missing file
+            if (rule == null)
+            {
+                try { File.Delete(activeFilePath); } catch { }
+            }
+
+            return rule;
         });
     }
 

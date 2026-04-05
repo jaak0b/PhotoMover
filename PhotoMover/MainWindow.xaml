@@ -330,7 +330,7 @@
 
                     <!-- Edit Form Panel -->
                     <StackPanel Grid.Column="1" Margin="0">
-                        <TextBlock Text="{Binding RuleEditorViewModel.IsEditMode, StringFormat='Edit Rule', ConverterParameter='Edit Rule|New Rule', Converter={StaticResource BooleanConverter}}" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,10" />
+                        <TextBlock Text="{Binding RuleEditorViewModel.IsEditMode, ConverterParameter='New Rule|Edit Rule', Converter={StaticResource BooleanConverter}}" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,10" />
                         <Separator Margin="0,0,0,15" />
 
                         <StackPanel Margin="0,0,0,10">
@@ -368,7 +368,7 @@
                             <TextBlock Text="{Binding RuleEditorViewModel.PreviewPath, Mode=OneWay}" Padding="8" Background="#F5F5F5" Foreground="#333" MinHeight="25" VerticalAlignment="Top" TextWrapping="Wrap" />
                         </StackPanel>
 
-                        <Button Content="{Binding RuleEditorViewModel.IsEditMode, StringFormat='Update Rule', ConverterParameter='Update Rule|Save Rule', Converter={StaticResource BooleanConverter}}" 
+                        <Button Content="{Binding RuleEditorViewModel.IsEditMode, ConverterParameter='Save Rule|Update Rule', Converter={StaticResource BooleanConverter}}" 
                                 Padding="15,10" FontSize="12" Background="#27AE60" Foreground="White" Cursor="Hand" 
                                 Command="{Binding RuleEditorViewModel.SaveRuleCommand}" Width="120" HorizontalAlignment="Left" />
                     </StackPanel>

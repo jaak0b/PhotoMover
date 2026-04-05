@@ -23,4 +23,8 @@
     <ProjectReference Include="..\PhotoMover.Infrastructure\PhotoMover.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Infrastructure\Services\" />
+  </ItemGroup>
+
 </Project>

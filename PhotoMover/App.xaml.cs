@@ -43,7 +43,8 @@ namespace PhotoMover
             // ViewModels
             services.AddSingleton<RuleEditorViewModel>();
             services.AddSingleton<SdImportViewModel>();
-            services.AddSingleton<FtpServerViewModel>();
+            services.AddSingleton<FtpServerViewModel>(sp =>
+                new FtpServerViewModel(sp.GetRequiredService<IFtpServer>(), sp.GetRequiredService<IRuleRepository>()));
             services.AddSingleton<MainWindowViewModel>();
 
             // Views

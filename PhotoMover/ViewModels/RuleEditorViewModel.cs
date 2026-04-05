@@ -26,6 +26,8 @@ public sealed class RuleEditorViewModel : ViewModelBase
         private set => SetProperty(ref _rules, value);
     }
 
+    public bool IsEditControlsEnabled => Rules != null && Rules.Count > 0;
+
     public GroupingRule? SelectedRule
     {
         get => _selectedRule;
@@ -37,6 +39,16 @@ public sealed class RuleEditorViewModel : ViewModelBase
                 {
                     LoadRuleForEditing(value);
                 }
+                else
+                {
+                    IsEditMode = false;
+                    _editingRuleId = null;
+                    RuleName = "";
+                    PathPattern = "{CameraModel}/{DateTaken:yyyy}/{DateTaken:MM}";
+                    PreviewPath = null;
+                }
+
+                OnPropertyChanged(nameof(IsEditControlsEnabled));
             }
         }
     }
@@ -83,6 +95,7 @@ public sealed class RuleEditorViewModel : ViewModelBase
     public ICommand AddNewRuleCommand { get; }
     public ICommand DeleteRuleCommand { get; }
     public ICommand SetActiveRuleCommand { get; }
+    public bool CanEditConfiguration => !AppState.IsImporting && !AppState.IsFtpRunning;
 
     public RuleEditorViewModel(
         IGroupingRuleEngine groupingRuleEngine,
@@ -93,10 +106,21 @@ public sealed class RuleEditorViewModel : ViewModelBase
         _ruleRepository = ruleRepository ?? throw new ArgumentNullException(nameof(ruleRepository));
         _metadataExtractor = metadataExtractor ?? throw new ArgumentNullException(nameof(metadataExtractor));
 
-        SaveRuleCommand = new RelayCommandAsync(_ => SaveRuleAsync(), _ => !IsSaving);
-        AddNewRuleCommand = new RelayCommand(_ => AddNewRule());
-        DeleteRuleCommand = new RelayCommandAsync(_ => DeleteSelectedRuleAsync(), _ => SelectedRule != null && !IsSaving);
-        SetActiveRuleCommand = new RelayCommandAsync(_ => SetSelectedRuleActiveAsync(), _ => SelectedRule != null && !SelectedRule.IsActive && !IsSaving);
+        SaveRuleCommand = new RelayCommandAsync(_ => SaveRuleAsync(), _ => !IsSaving && CanEditConfiguration);
+        AddNewRuleCommand = new RelayCommand(_ => AddNewRule(), _ => CanEditConfiguration);
+        DeleteRuleCommand = new RelayCommandAsync(_ => DeleteSelectedRuleAsync(), _ => SelectedRule != null && !IsSaving && CanEditConfiguration);
+        SetActiveRuleCommand = new RelayCommandAsync(_ => SetSelectedRuleActiveAsync(), _ => SelectedRule != null && !SelectedRule.IsActive && !IsSaving && CanEditConfiguration);
+
+        AppState.ImportingChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(CanEditConfiguration));
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+        };
+        AppState.FtpRunningChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(CanEditConfiguration));
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+        };
 
         ValidateAndUpdatePreview();
     }
@@ -120,6 +144,23 @@ public sealed class RuleEditorViewModel : ViewModelBase
 
                 Rules.Add(adjusted);
             }
+
+            // Restore selection: prefer the rule we were editing, otherwise select the active rule
+            GroupingRule? toSelect = null;
+            if (!string.IsNullOrEmpty(_editingRuleId))
+            {
+                toSelect = Rules.FirstOrDefault(r => r.Id == _editingRuleId);
+            }
+
+            if (toSelect == null && activeRule != null)
+            {
+                toSelect = Rules.FirstOrDefault(r => r.Id == activeRule.Id);
+            }
+
+            SelectedRule = toSelect; // will be null if nothing to select
+
+            OnPropertyChanged(nameof(IsEditControlsEnabled));
+            OnPropertyChanged(nameof(CanEditConfiguration));
         }
         catch (Exception ex)
         {
@@ -141,15 +182,17 @@ public sealed class RuleEditorViewModel : ViewModelBase
             return;
         }
 
-        IsSaving = true;
+            IsSaving = true;
         try
         {
-            GroupingRule rule;
+            // Snapshot whether we are creating vs updating before any async work changes state
+            bool isCreatingNew = SelectedRule == null && !IsEditMode;
+            string? existingId = SelectedRule?.Id ?? (IsEditMode ? _editingRuleId : null);
 
-            if (IsEditMode && _editingRuleId != null)
+            GroupingRule rule;
+            if (existingId != null)
             {
-                // Update existing rule
-                var existingRule = await _ruleRepository.GetRuleByIdAsync(_editingRuleId);
+                var existingRule = await _ruleRepository.GetRuleByIdAsync(existingId);
                 if (existingRule == null)
                 {
                     PreviewPath = "Rule not found";
@@ -164,7 +207,6 @@ public sealed class RuleEditorViewModel : ViewModelBase
             }
             else
             {
-                // Create new rule
                 rule = new GroupingRule
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -178,15 +220,22 @@ public sealed class RuleEditorViewModel : ViewModelBase
 
             await _ruleRepository.SaveRuleAsync(rule);
 
-            // If creating new rule, set it as active
-            if (!IsEditMode)
+            // New rules become active automatically
+            if (isCreatingNew)
             {
                 await _ruleRepository.SetActiveRuleAsync(rule.Id);
             }
 
+            string savedId = rule.Id;
             PreviewPath = "Rule saved successfully!";
             await LoadRulesAsync();
-            AddNewRule(); // Reset to new rule form
+
+            // Re-select the saved rule so edits remain visible
+            var saved = Rules.FirstOrDefault(r => r.Id == savedId);
+            if (saved != null)
+            {
+                SelectedRule = saved;
+            }
         }
         catch (Exception ex)
         {
@@ -200,6 +249,12 @@ public sealed class RuleEditorViewModel : ViewModelBase
 
     public void AddNewRule()
     {
+        if (!CanEditConfiguration)
+        {
+            PreviewPath = "Cannot add rule while import or FTP server is running";
+            return;
+        }
+
         IsEditMode = false;
         _editingRuleId = null;
         RuleName = "";
@@ -222,6 +277,12 @@ public sealed class RuleEditorViewModel : ViewModelBase
     {
         if (SelectedRule == null)
             return;
+
+        if (!CanEditConfiguration)
+        {
+            PreviewPath = "Cannot delete rule while import or FTP server is running";
+            return;
+        }
 
         // Show confirmation dialog
         var result = System.Windows.MessageBox.Show(
@@ -255,6 +316,12 @@ public sealed class RuleEditorViewModel : ViewModelBase
     {
         if (SelectedRule == null)
             return;
+
+        if (!CanEditConfiguration)
+        {
+            PreviewPath = "Cannot change active rule while import or FTP server is running";
+            return;
+        }
 
         IsSaving = true;
         try

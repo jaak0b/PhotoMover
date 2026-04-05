@@ -36,6 +36,7 @@ public sealed class UploadedFile
 public sealed class FtpServerViewModel : ViewModelBase
 {
     private readonly IFtpServer _ftpServer;
+    private readonly IRuleRepository _ruleRepository;
     private const int MinPort = 1;
     private const int MaxPort = 65535;
 
@@ -86,11 +87,24 @@ public sealed class FtpServerViewModel : ViewModelBase
     public ICommand ClearFilesCommand { get; }
     public ICommand BrowseFtpDirectoryCommand { get; }
 
-    public FtpServerViewModel(IFtpServer ftpServer)
+    public FtpServerViewModel(IFtpServer ftpServer, IRuleRepository ruleRepository)
     {
         _ftpServer = ftpServer ?? throw new ArgumentNullException(nameof(ftpServer));
+        _ruleRepository = ruleRepository ?? throw new ArgumentNullException(nameof(ruleRepository));
+        // Listen to global app state changes so we can update command availability
+        AppState.ImportingChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(CanEditConfiguration));
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+        };
+        AppState.FtpRunningChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(CanEditConfiguration));
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+        };
 
-        StartServerCommand = new RelayCommandAsync(_ => StartServerAsync(), _ => !IsRunning);
+        StartServerCommand = new RelayCommandAsync(_ => StartServerAsync(), _ => !IsRunning && CanEditConfiguration);
+        // Allow stopping the server while it's running regardless of CanEditConfiguration
         StopServerCommand = new RelayCommandAsync(_ => StopServerAsync(), _ => IsRunning);
         ClearFilesCommand = new RelayCommand(_ => ClearUploadedFiles(), _ => UploadedFiles.Count > 0);
         BrowseFtpDirectoryCommand = new RelayCommand(_ => BrowseFtpDirectory());
@@ -106,6 +120,14 @@ public sealed class FtpServerViewModel : ViewModelBase
 
         try
         {
+            // Prevent starting when there is no active grouping rule configured
+            var activeRule = await _ruleRepository.GetActiveRuleAsync();
+            if (activeRule == null)
+            {
+                Status = "Cannot start FTP server: no active grouping rule configured";
+                return;
+            }
+
             if (!Directory.Exists(UploadDirectory))
             {
                 Directory.CreateDirectory(UploadDirectory);
@@ -114,10 +136,20 @@ public sealed class FtpServerViewModel : ViewModelBase
             await _ftpServer.StartAsync(Port, UploadDirectory);
             IsRunning = true;
             Status = $"Running on port {Port}";
+
+            AppState.IsFtpRunning = true;
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
         catch (Exception ex)
         {
-            Status = $"Error: {ex.Message}";
+            // Improve guidance for common failures (port in use or permissions)
+            var msg = ex.Message;
+            if (ex.InnerException is System.Net.Sockets.SocketException || msg.Contains("permission", StringComparison.OrdinalIgnoreCase) || msg.Contains("access", StringComparison.OrdinalIgnoreCase))
+            {
+                msg += " - try a non-privileged port (>1024) or run the app with elevated privileges.";
+            }
+
+            Status = $"Error: {msg}";
         }
     }
 
@@ -131,12 +163,17 @@ public sealed class FtpServerViewModel : ViewModelBase
             await _ftpServer.StopAsync();
             IsRunning = false;
             Status = "Stopped";
+
+            AppState.IsFtpRunning = false;
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
         catch (Exception ex)
         {
             Status = $"Error: {ex.Message}";
         }
     }
+
+    public bool CanEditConfiguration => !AppState.IsImporting && !AppState.IsFtpRunning;
 
     private void ClearUploadedFiles()
     {
