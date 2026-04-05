@@ -15,10 +15,9 @@ Key features
 - Embedded FTP server for automated transfers when needed.
 
 Screenshots
-<img width="999" height="650" alt="image" src="https://github.com/user-attachments/assets/f58e2350-de02-413b-b7e0-657c943ad9e2" />
-<img width="994" height="651" alt="image" src="https://github.com/user-attachments/assets/8cf4db86-c70c-48d1-8c0c-56d8d7f4a369" />
-<img width="996" height="653" alt="image" src="https://github.com/user-attachments/assets/802baa93-08ea-4cb9-8732-d7610d7834ef" />
-<img width="1001" height="656" alt="image" src="https://github.com/user-attachments/assets/fa914ac6-c006-4a9a-900c-3c2ff456e6e0" />
+<img width="998" height="655" alt="image" src="https://github.com/user-attachments/assets/9806cd23-ef53-478c-919d-a75faa01a79b" />
+<img width="1003" height="653" alt="image" src="https://github.com/user-attachments/assets/b80159ec-8d26-4073-b99d-f995d16dd74c" />
+<img width="1000" height="659" alt="image" src="https://github.com/user-attachments/assets/59f35d1b-9729-4654-96c0-b2a6266dbbc1" />
 
 Quick start
 - Requirements: .NET 10 SDK, Windows (WPF UI).
