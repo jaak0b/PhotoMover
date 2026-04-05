@@ -32,7 +32,4 @@ Configuration notes
 - The FTP server can be started from the `FTP Server` tab for automated delivery.
 
 Contributing
-- Fixes and improvements are welcome. Keep changes focused and include tests for core behavior where appropriate.
-
-License
-- MIT — see `LICENSE`.
+- Fixes and improvements are welcome.
