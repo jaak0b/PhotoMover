@@ -43,7 +43,6 @@ public sealed class FtpServerViewModel : ViewModelBase
     private bool _isRunning;
     private int _port = 21;
     private string _status = "Stopped";
-    private string _uploadDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "FTP");
     private ObservableCollection<UploadedFile> _uploadedFiles = new();
 
     public bool IsRunning
@@ -70,12 +69,6 @@ public sealed class FtpServerViewModel : ViewModelBase
         private set => SetProperty(ref _status, value);
     }
 
-    public string UploadDirectory
-    {
-        get => _uploadDirectory;
-        set => SetProperty(ref _uploadDirectory, value);
-    }
-
     public ObservableCollection<UploadedFile> UploadedFiles
     {
         get => _uploadedFiles;
@@ -85,7 +78,6 @@ public sealed class FtpServerViewModel : ViewModelBase
     public ICommand StartServerCommand { get; }
     public ICommand StopServerCommand { get; }
     public ICommand ClearFilesCommand { get; }
-    public ICommand BrowseFtpDirectoryCommand { get; }
 
     public FtpServerViewModel(IFtpServer ftpServer, IRuleRepository ruleRepository)
     {
@@ -107,7 +99,6 @@ public sealed class FtpServerViewModel : ViewModelBase
         // Allow stopping the server while it's running regardless of CanEditConfiguration
         StopServerCommand = new RelayCommandAsync(_ => StopServerAsync(), _ => IsRunning);
         ClearFilesCommand = new RelayCommand(_ => ClearUploadedFiles(), _ => UploadedFiles.Count > 0);
-        BrowseFtpDirectoryCommand = new RelayCommand(_ => BrowseFtpDirectory());
 
         // Subscribe to file uploaded events from the FTP server
         _ftpServer.FileUploaded += FtpServer_FileUploaded;
@@ -128,12 +119,12 @@ public sealed class FtpServerViewModel : ViewModelBase
                 return;
             }
 
-            if (!Directory.Exists(UploadDirectory))
+            if (!Directory.Exists(activeRule.DestinationPath))
             {
-                Directory.CreateDirectory(UploadDirectory);
+                Directory.CreateDirectory(activeRule.DestinationPath);
             }
 
-            await _ftpServer.StartAsync(Port, UploadDirectory);
+            await _ftpServer.StartAsync(Port, activeRule.DestinationPath);
             IsRunning = true;
             Status = $"Running on port {Port}";
 
@@ -178,22 +169,6 @@ public sealed class FtpServerViewModel : ViewModelBase
     private void ClearUploadedFiles()
     {
         UploadedFiles.Clear();
-    }
-
-    private void BrowseFtpDirectory()
-    {
-        var folderDialog = new System.Windows.Forms.FolderBrowserDialog
-        {
-            Description = "Select FTP Upload Directory",
-            ShowNewFolderButton = true,
-            SelectedPath = UploadDirectory
-        };
-
-        var result = folderDialog.ShowDialog();
-        if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(folderDialog.SelectedPath))
-        {
-            UploadDirectory = folderDialog.SelectedPath;
-        }
     }
 
     private void FtpServer_FileUploaded(object? sender, FtpFileUploadedEventArgs e)

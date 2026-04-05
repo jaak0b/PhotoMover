@@ -124,17 +124,8 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Vertical">
-                                <TextBlock Text="Upload Directory:" FontWeight="Bold" Foreground="#333" Margin="0,0,0,4" />
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="1*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" Text="{Binding FtpServerViewModel.UploadDirectory}" Padding="6" Height="28" FontSize="12" VerticalContentAlignment="Center" />
-                                    <Button Grid.Column="1" Content="Browse..." Width="84" Height="28" FontSize="12" Background="#3498DB" Foreground="White" Cursor="Hand" Margin="8,0,0,0" VerticalAlignment="Center"
-                                            Command="{Binding FtpServerViewModel.BrowseFtpDirectoryCommand}"
-                                            IsEnabled="{Binding FtpServerViewModel.IsRunning, Converter={StaticResource InverseBooleanConverter}}" />
-                                </Grid>
+                                <TextBlock Text="Destination Folder:" FontWeight="Bold" Foreground="#333" Margin="0,0,0,4" />
+                                <TextBlock Text="Configured per grouping rule in the Grouping Rules tab." Foreground="#7F8C8D" FontSize="11" FontStyle="Italic" />
                             </StackPanel>
                         </Grid>
 
@@ -189,18 +180,7 @@
                             </ListBox.ItemTemplate>
                         </ListBox>
 
-                        <TextBlock Text="Destination Folder:" FontWeight="Bold" Foreground="#333" Margin="0,10,0,5" />
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBox Grid.Column="0" Text="{Binding SdImportViewModel.DestinationPath}" Padding="8" Height="35" FontSize="12" VerticalContentAlignment="Center"
-                                     IsEnabled="{Binding SdImportViewModel.IsImporting, Converter={StaticResource InverseBooleanConverter}}" />
-                            <Button Grid.Column="1" Content="Browse..." Padding="15,8" Height="35" FontSize="12" Background="#3498DB" Foreground="White" Cursor="Hand" Margin="8,0,0,0" VerticalAlignment="Center"
-                                    Command="{Binding SdImportViewModel.BrowseFolderCommand}"
-                                    IsEnabled="{Binding SdImportViewModel.IsImporting, Converter={StaticResource InverseBooleanConverter}}" />
-                        </Grid>
+                        <TextBlock Text="Destination folder is taken from the active grouping rule." FontSize="11" Foreground="#7F8C8D" FontStyle="Italic" Margin="0,10,0,10" />
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                             <Button Content="Import" Padding="15,10" FontSize="12" Background="#27AE60" Foreground="White" Cursor="Hand" Margin="0,0,10,0"
@@ -368,7 +348,21 @@
                             <TextBlock Text="{Binding RuleEditorViewModel.PreviewPath, Mode=OneWay}" Padding="8" Background="#F5F5F5" Foreground="#333" MinHeight="25" VerticalAlignment="Top" TextWrapping="Wrap" />
                         </StackPanel>
 
-                        <Button Content="{Binding RuleEditorViewModel.IsEditMode, ConverterParameter='Save Rule|Update Rule', Converter={StaticResource BooleanConverter}}" 
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock Text="Destination Folder:" FontWeight="Bold" Foreground="#333" Margin="0,0,0,5" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding RuleEditorViewModel.DestinationPath, UpdateSourceTrigger=PropertyChanged}" Padding="8" Height="35" FontSize="12" VerticalContentAlignment="Center"
+                                         IsEnabled="{Binding RuleEditorViewModel.CanEditConfiguration}" />
+                                <Button Grid.Column="1" Content="Browse..." Padding="10,8" Height="35" FontSize="12" Background="#3498DB" Foreground="White" Cursor="Hand" Margin="8,0,0,0" VerticalAlignment="Center"
+                                        Command="{Binding RuleEditorViewModel.BrowseDestinationFolderCommand}" />
+                            </Grid>
+                        </StackPanel>
+
+                        <Button Content="{Binding RuleEditorViewModel.IsEditMode, ConverterParameter='Save Rule|Update Rule', Converter={StaticResource BooleanConverter}}"
                                 Padding="15,10" FontSize="12" Background="#27AE60" Foreground="White" Cursor="Hand" 
                                 Command="{Binding RuleEditorViewModel.SaveRuleCommand}" Width="120" HorizontalAlignment="Left" />
                     </StackPanel>

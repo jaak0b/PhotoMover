@@ -4,8 +4,6 @@ using PhotoMover.Core.Services;
 using PhotoMover.Core.Models;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using System.IO;
-using System.Windows.Forms;
 
 /// <summary>
 /// View model for SD/microSD card import functionality.
@@ -23,7 +21,6 @@ public sealed class SdImportViewModel : ViewModelBase
     private string _status = "Ready";
     private double _progress;
     private ObservableCollection<ImportResult> _results = new();
-    private string _destinationPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PhotoMover");
     private string _estimatedTimeRemaining = "";
     private int _filesProcessed;
     private int _totalFiles;
@@ -90,16 +87,9 @@ public sealed class SdImportViewModel : ViewModelBase
         private set => SetProperty(ref _results, value);
     }
 
-    public string DestinationPath
-    {
-        get => _destinationPath;
-        set => SetProperty(ref _destinationPath, value);
-    }
-
     public ICommand DetectCardsCommand { get; }
     public ICommand ImportCommand { get; }
     public ICommand CancelImportCommand { get; }
-    public ICommand BrowseFolderCommand { get; }
 
     public SdImportViewModel(
         ISdCardDetector sdCardDetector,
@@ -113,7 +103,6 @@ public sealed class SdImportViewModel : ViewModelBase
         DetectCardsCommand = new RelayCommandAsync(_ => DetectCardsAsync(), _ => !IsScanning);
         ImportCommand = new RelayCommandAsync(_ => ImportFromCardAsync(), _ => !IsImporting && SelectedCard is not null);
         CancelImportCommand = new RelayCommand(_ => CancelImport(), _ => IsImporting);
-        BrowseFolderCommand = new RelayCommand(_ => BrowseFolder(), _ => !IsImporting);
 
         // react to app state changes so UI can update
         AppState.ImportingChanged += (_, _) => OnPropertyChanged(nameof(CanEditConfiguration));
@@ -210,7 +199,7 @@ public sealed class SdImportViewModel : ViewModelBase
             var results = await _importPipeline.ProcessPhotosAsync(
                 files,
                 activeRule,
-                DestinationPath,
+                activeRule.DestinationPath,
                 progress,
                 _importCancellationTokenSource.Token);
 
@@ -252,24 +241,6 @@ public sealed class SdImportViewModel : ViewModelBase
         if (_importCancellationTokenSource is not null)
         {
             _importCancellationTokenSource.Cancel();
-        }
-    }
-
-    /// <summary>
-    /// Opens a folder selection dialog and updates the destination path.
-    /// </summary>
-    public void BrowseFolder()
-    {
-        var dialog = new System.Windows.Forms.FolderBrowserDialog
-        {
-            Description = "Select the destination folder for imported photos",
-            SelectedPath = DestinationPath,
-            ShowNewFolderButton = true
-        };
-
-        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-        {
-            DestinationPath = dialog.SelectedPath;
         }
     }
 

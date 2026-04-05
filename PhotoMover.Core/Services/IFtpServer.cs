@@ -3,6 +3,7 @@ namespace PhotoMover.Core.Services;
 /// <summary>
 /// Service for hosting an embedded FTP server.
 /// </summary>
+using PhotoMover.Core.Models;
 public interface IFtpServer
 {
     /// <summary>
@@ -16,6 +17,7 @@ public interface IFtpServer
     /// <param name="port">Port to listen on (default 21).</param>
     /// <param name="uploadDirectory">Directory where uploads are stored.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <param name="uploadDirectory">Staging root; a .ftp_temp sub-folder is used during transfer.</param>
     Task StartAsync(int port, string uploadDirectory, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -48,4 +50,9 @@ public sealed class FtpFileUploadedEventArgs : EventArgs
     public required string FileName { get; init; }
     public required long FileSize { get; init; }
     public required DateTime UploadedAt { get; init; }
+
+    /// <summary>
+    /// Null when the pipeline was not invoked (e.g. no active grouping rule at upload time).
+    /// </summary>
+    public ImportResult? ImportResult { get; init; }
 }

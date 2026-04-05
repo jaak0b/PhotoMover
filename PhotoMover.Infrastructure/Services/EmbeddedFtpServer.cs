@@ -1,5 +1,8 @@
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("PhotoMover.Tests")]
+
 namespace PhotoMover.Infrastructure.Services;
 
+using PhotoMover.Core.Models;
 using PhotoMover.Core.Services;
 using System.Net;
 using System.Net.Sockets;
@@ -13,6 +16,9 @@ using System.Threading;
 /// </summary>
 public sealed class EmbeddedFtpServer : Core.Services.IFtpServer, IDisposable
 {
+    private readonly IImportPipeline _importPipeline;
+    private readonly IRuleRepository _ruleRepository;
+    private readonly IFileSystem _fileSystem;
     private TcpListener? _commandListener;
     private CancellationTokenSource? _cancellationTokenSource;
     private Task? _serverTask;
@@ -23,6 +29,16 @@ public sealed class EmbeddedFtpServer : Core.Services.IFtpServer, IDisposable
     private SynchronizationContext? _uiContext;
 
     public event EventHandler<FtpFileUploadedEventArgs>? FileUploaded;
+
+    public EmbeddedFtpServer(
+        IImportPipeline importPipeline,
+        IRuleRepository ruleRepository,
+        IFileSystem fileSystem)
+    {
+        _importPipeline = importPipeline ?? throw new ArgumentNullException(nameof(importPipeline));
+        _ruleRepository = ruleRepository ?? throw new ArgumentNullException(nameof(ruleRepository));
+        _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+    }
 
     public bool IsRunning => _commandListener != null;
 
@@ -144,42 +160,46 @@ public sealed class EmbeddedFtpServer : Core.Services.IFtpServer, IDisposable
         }
     }
 
-    private async Task OnFileUploadCompleted(string fileName, string tempFilePath)
+    /// <summary>
+    /// Called by <see cref="FileUploadCompletionDetector"/> when a file has been fully received.
+    /// Runs the file through the import pipeline so it is organized by the active grouping rule.
+    /// Internal to allow direct invocation from unit tests.
+    /// </summary>
+    internal async Task OnFileUploadCompleted(string fileName, string tempFilePath)
     {
         try
         {
-            if (!File.Exists(tempFilePath))
+            if (!_fileSystem.FileExists(tempFilePath))
             {
                 return;
             }
 
-            var finalPath = Path.Combine(_uploadDirectory, fileName);
-            var finalDirectory = Path.GetDirectoryName(finalPath);
-
-            if (string.IsNullOrEmpty(finalDirectory))
+            var activeRule = await _ruleRepository.GetActiveRuleAsync();
+            if (activeRule == null)
             {
                 return;
             }
 
-            if (!Directory.Exists(finalDirectory))
-            {
-                Directory.CreateDirectory(finalDirectory);
-            }
+            // Read size before the pipeline moves the file away.
+            long fileSize = new FileInfo(tempFilePath).Length;
 
-            if (File.Exists(finalPath))
-            {
-                File.Delete(finalPath);
-            }
+            var result = await _importPipeline.ProcessPhotoAsync(
+                tempFilePath,
+                activeRule,
+                activeRule.DestinationPath);
 
-            File.Move(tempFilePath, finalPath, overwrite: true);
+            string finalFilePath = result.Success ? result.DestinationPath : tempFilePath;
+            string finalFileName = result.Success && !string.IsNullOrEmpty(result.DestinationPath)
+                ? Path.GetFileName(result.DestinationPath)
+                : fileName;
 
-            var fileInfo = new FileInfo(finalPath);
             var uploadedEventArgs = new FtpFileUploadedEventArgs
             {
-                FilePath = finalPath,
-                FileName = fileName,
-                FileSize = fileInfo.Length,
-                UploadedAt = DateTime.Now
+                FilePath = finalFilePath,
+                FileName = finalFileName,
+                FileSize = fileSize,
+                UploadedAt = DateTime.Now,
+                ImportResult = result
             };
 
             if (_uiContext != null)
@@ -190,8 +210,6 @@ public sealed class EmbeddedFtpServer : Core.Services.IFtpServer, IDisposable
             {
                 OnFileUploaded(uploadedEventArgs);
             }
-
-            await Task.CompletedTask;
         }
         catch
         {

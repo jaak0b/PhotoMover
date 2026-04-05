@@ -13,6 +13,13 @@ public sealed record GroupingRule
     public required Dictionary<string, string> Metadata { get; init; }
 
     /// <summary>
+    /// Root folder into which photos are moved after grouping.
+    /// Defaults to Documents\PhotoMover for rules created before this field was introduced.
+    /// </summary>
+    public string DestinationPath { get; init; } = System.IO.Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PhotoMover");
+
+    /// <summary>
     /// Example: "{CameraModel}/{DateTaken:yyyy}/{DateTaken:MM}"
     /// </summary>
     public GroupingRule()

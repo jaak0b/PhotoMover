@@ -3,6 +3,7 @@ namespace PhotoMover.ViewModels;
 using PhotoMover.Core.Models;
 using PhotoMover.Core.Services;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows.Input;
 
 public sealed class RuleEditorViewModel : ViewModelBase
@@ -15,6 +16,7 @@ public sealed class RuleEditorViewModel : ViewModelBase
     private GroupingRule? _selectedRule;
     private string _ruleName = "";
     private string _pathPattern = "{CameraModel}/{DateTaken:yyyy}/{DateTaken:MM}";
+    private string _destinationPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PhotoMover");
     private string? _previewPath;
     private bool _isSaving;
     private bool _isEditMode;
@@ -45,6 +47,7 @@ public sealed class RuleEditorViewModel : ViewModelBase
                     _editingRuleId = null;
                     RuleName = "";
                     PathPattern = "{CameraModel}/{DateTaken:yyyy}/{DateTaken:MM}";
+                    DestinationPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PhotoMover");
                     PreviewPath = null;
                 }
 
@@ -71,6 +74,12 @@ public sealed class RuleEditorViewModel : ViewModelBase
         }
     }
 
+    public string DestinationPath
+    {
+        get => _destinationPath;
+        set => SetProperty(ref _destinationPath, value);
+    }
+
     public string? PreviewPath
     {
         get => _previewPath;
@@ -95,6 +104,7 @@ public sealed class RuleEditorViewModel : ViewModelBase
     public ICommand AddNewRuleCommand { get; }
     public ICommand DeleteRuleCommand { get; }
     public ICommand SetActiveRuleCommand { get; }
+    public ICommand BrowseDestinationFolderCommand { get; }
     public bool CanEditConfiguration => !AppState.IsImporting && !AppState.IsFtpRunning;
 
     public RuleEditorViewModel(
@@ -110,6 +120,7 @@ public sealed class RuleEditorViewModel : ViewModelBase
         AddNewRuleCommand = new RelayCommand(_ => AddNewRule(), _ => CanEditConfiguration);
         DeleteRuleCommand = new RelayCommandAsync(_ => DeleteSelectedRuleAsync(), _ => SelectedRule != null && !IsSaving && CanEditConfiguration);
         SetActiveRuleCommand = new RelayCommandAsync(_ => SetSelectedRuleActiveAsync(), _ => SelectedRule != null && !SelectedRule.IsActive && !IsSaving && CanEditConfiguration);
+        BrowseDestinationFolderCommand = new RelayCommand(_ => BrowseDestinationFolder(), _ => CanEditConfiguration);
 
         AppState.ImportingChanged += (_, _) =>
         {
@@ -202,7 +213,8 @@ public sealed class RuleEditorViewModel : ViewModelBase
                 rule = existingRule with
                 {
                     Name = RuleName,
-                    PathPattern = PathPattern
+                    PathPattern = PathPattern,
+                    DestinationPath = DestinationPath
                 };
             }
             else
@@ -212,6 +224,7 @@ public sealed class RuleEditorViewModel : ViewModelBase
                     Id = Guid.NewGuid().ToString(),
                     Name = RuleName,
                     PathPattern = PathPattern,
+                    DestinationPath = DestinationPath,
                     IsActive = false,
                     Priority = 0,
                     Metadata = new Dictionary<string, string>()
@@ -259,6 +272,7 @@ public sealed class RuleEditorViewModel : ViewModelBase
         _editingRuleId = null;
         RuleName = "";
         PathPattern = "{CameraModel}/{DateTaken:yyyy}/{DateTaken:MM}";
+        DestinationPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "PhotoMover");
         SelectedRule = null;
         PreviewPath = null;
         ValidateAndUpdatePreview();
@@ -270,6 +284,7 @@ public sealed class RuleEditorViewModel : ViewModelBase
         _editingRuleId = rule.Id;
         RuleName = rule.Name;
         PathPattern = rule.PathPattern;
+        DestinationPath = rule.DestinationPath;
         ValidateAndUpdatePreview();
     }
 
@@ -343,6 +358,21 @@ public sealed class RuleEditorViewModel : ViewModelBase
     public void InsertPlaceholder(string placeholder)
     {
         PathPattern += $"{{{placeholder}}}";
+    }
+
+    public void BrowseDestinationFolder()
+    {
+        var dialog = new System.Windows.Forms.FolderBrowserDialog
+        {
+            Description = "Select the destination folder for imported photos",
+            SelectedPath = DestinationPath,
+            ShowNewFolderButton = true
+        };
+
+        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        {
+            DestinationPath = dialog.SelectedPath;
+        }
     }
 
     private void ValidateAndUpdatePreview()
