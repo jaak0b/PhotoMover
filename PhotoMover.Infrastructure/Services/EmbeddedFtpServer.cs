@@ -273,6 +273,8 @@ internal sealed class FtpClientHandler : IDisposable
     private readonly TcpClient _commandClient;
     private readonly string _uploadDirectory;
     private NetworkStream? _commandStream;
+    private StreamReader? _commandReader;
+    private StreamWriter? _commandWriter;
     private TcpListener? _dataListener;
     private string _currentUser = string.Empty;
     private bool _isAuthenticated;
@@ -286,6 +288,8 @@ internal sealed class FtpClientHandler : IDisposable
     public async Task ProcessAsync(CancellationToken cancellationToken)
     {
         _commandStream = _commandClient.GetStream();
+        _commandReader = new StreamReader(_commandStream, leaveOpen: true);
+        _commandWriter = new StreamWriter(_commandStream, leaveOpen: true) { AutoFlush = true };
 
         try
         {
@@ -305,6 +309,8 @@ internal sealed class FtpClientHandler : IDisposable
         }
         finally
         {
+            _commandReader?.Dispose();
+            _commandWriter?.Dispose();
             _commandStream?.Dispose();
             _dataListener?.Stop();
         }
@@ -312,17 +318,14 @@ internal sealed class FtpClientHandler : IDisposable
 
     private async Task<string> ReadCommandAsync()
     {
-        if (_commandStream == null)
+        if (_commandReader == null)
         {
             return string.Empty;
         }
 
         try
         {
-            using (var reader = new StreamReader(_commandStream, leaveOpen: true))
-            {
-                return (await reader.ReadLineAsync()) ?? string.Empty;
-            }
+            return (await _commandReader.ReadLineAsync()) ?? string.Empty;
         }
         catch
         {
@@ -422,7 +425,16 @@ internal sealed class FtpClientHandler : IDisposable
             var high = port >> 8;
             var low = port & 0xFF;
 
-            await SendResponseAsync($"227 Entering Passive Mode (127,0,0,1,{high},{low})\r\n");
+            // Advertise the address the client connected to (this machine's LAN IP),
+            // not loopback — external clients such as cameras must be able to reach it.
+            var localAddress = ((IPEndPoint)_commandClient.Client.LocalEndPoint!).Address;
+            if (localAddress.IsIPv4MappedToIPv6)
+            {
+                localAddress = localAddress.MapToIPv4();
+            }
+
+            var ipParts = localAddress.ToString().Replace('.', ',');
+            await SendResponseAsync($"227 Entering Passive Mode ({ipParts},{high},{low})\r\n");
         }
         catch
         {
@@ -514,13 +526,9 @@ internal sealed class FtpClientHandler : IDisposable
     {
         try
         {
-            if (_commandStream != null)
+            if (_commandWriter != null)
             {
-                using (var writer = new StreamWriter(_commandStream, leaveOpen: true))
-                {
-                    await writer.WriteAsync(message);
-                    await writer.FlushAsync();
-                }
+                await _commandWriter.WriteAsync(message);
             }
         }
         catch
@@ -530,6 +538,8 @@ internal sealed class FtpClientHandler : IDisposable
 
     public void Dispose()
     {
+        _commandReader?.Dispose();
+        _commandWriter?.Dispose();
         _commandStream?.Dispose();
         _dataListener?.Stop();
         _commandClient?.Dispose();

@@ -351,3 +351,97 @@ public sealed class EmbeddedFtpServerTests : IDisposable
         _sut.Dispose();
     }
 }
+
+/// <summary>
+/// Protocol-level tests for FtpClientHandler using real loopback sockets.
+/// </summary>
+public sealed class FtpClientHandlerTests
+{
+    private static async Task<(System.Net.Sockets.TcpClient client, Task handlerTask, CancellationTokenSource cts)> ConnectAsync(string uploadDir)
+    {
+        var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+
+        var client = new System.Net.Sockets.TcpClient();
+        await client.ConnectAsync(System.Net.IPAddress.Loopback, port);
+        var serverSide = await listener.AcceptTcpClientAsync();
+        listener.Stop();
+
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var handler = new FtpClientHandler(serverSide, uploadDir);
+        var handlerTask = handler.ProcessAsync(cts.Token);
+
+        return (client, handlerTask, cts);
+    }
+
+    private static async Task<string> ReadLineAsync(StreamReader reader)
+    {
+        return (await reader.ReadLineAsync()) ?? string.Empty;
+    }
+
+    [Fact]
+    public async Task Pasv_AdvertisesCommandConnectionLocalAddress_NotHardcodedLoopbackLiteral()
+    {
+        var uploadDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(uploadDir);
+
+        var (client, handlerTask, cts) = await ConnectAsync(uploadDir);
+        using (client)
+        {
+            var stream = client.GetStream();
+            using var reader = new StreamReader(stream, leaveOpen: true);
+            using var writer = new StreamWriter(stream, leaveOpen: true) { AutoFlush = true };
+
+            (await ReadLineAsync(reader)).Should().StartWith("220");
+
+            await writer.WriteAsync("PASV\r\n");
+            var response = await ReadLineAsync(reader);
+
+            response.Should().StartWith("227");
+
+            // Address in the 227 reply must match the address the client actually
+            // connected to (the command connection's server-side local endpoint).
+            var serverAddress = ((System.Net.IPEndPoint)client.Client.RemoteEndPoint!).Address.MapToIPv4();
+            var expectedIpPart = serverAddress.ToString().Replace('.', ',');
+            response.Should().Contain(expectedIpPart);
+
+            await writer.WriteAsync("QUIT\r\n");
+        }
+
+        cts.Cancel();
+        await Task.WhenAny(handlerTask, Task.Delay(2000));
+        Directory.Delete(uploadDir, recursive: true);
+    }
+
+    [Fact]
+    public async Task PipelinedCommands_AllProcessed_NoneSwallowedByReaderBuffering()
+    {
+        var uploadDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(uploadDir);
+
+        var (client, handlerTask, cts) = await ConnectAsync(uploadDir);
+        using (client)
+        {
+            var stream = client.GetStream();
+            using var reader = new StreamReader(stream, leaveOpen: true);
+            using var writer = new StreamWriter(stream, leaveOpen: true) { AutoFlush = true };
+
+            (await ReadLineAsync(reader)).Should().StartWith("220");
+
+            // Send several commands in one packet, as cameras do.
+            await writer.WriteAsync("USER camera\r\nPASS secret\r\nTYPE I\r\nNOOP\r\n");
+
+            (await ReadLineAsync(reader)).Should().StartWith("331");
+            (await ReadLineAsync(reader)).Should().StartWith("230");
+            (await ReadLineAsync(reader)).Should().StartWith("200");
+            (await ReadLineAsync(reader)).Should().StartWith("200");
+
+            await writer.WriteAsync("QUIT\r\n");
+        }
+
+        cts.Cancel();
+        await Task.WhenAny(handlerTask, Task.Delay(2000));
+        Directory.Delete(uploadDir, recursive: true);
+    }
+}
